@@ -4,6 +4,8 @@ from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 
 #This file holds all of the objects used in gosling utils
 #Includes custom vector and matrix objects
+from strategy.analyzer import GameAnalyzer
+
 
 class GoslingAgent(BaseAgent):
     #This is the main object of Gosling Utils. It holds/updates information about the game and runs routines
@@ -36,6 +38,8 @@ class GoslingAgent(BaseAgent):
         self.last_time = 0
         self.my_score = 0
         self.foe_score = 0
+
+        self.analysis = GameAnalyzer()
         
     def get_ready(self,packet):
         #Preps all of the objects that will be updated during play
@@ -84,6 +88,9 @@ class GoslingAgent(BaseAgent):
             self.stack = []
         #Tells us when to go for kickoff
         self.kickoff_flag = packet.game_info.is_round_active and packet.game_info.is_kickoff_pause
+
+        # Lastly, analyze the game state
+        self.analysis.update(self)
     def get_output(self,packet):
         #Reset controller
         self.controller.__init__()
@@ -93,11 +100,11 @@ class GoslingAgent(BaseAgent):
         self.preprocess(packet)
         
         self.renderer.begin_rendering()
-        #Run our strategy code
-        self.run()
-        #run the routine on the end of the stack
+        # run the routine on the end of the stack
         if len(self.stack) > 0:
             self.stack[-1].run(self)
+        #Run our strategy code
+        self.run()
         self.renderer.end_rendering()
         #send our updated controller back to rlbot
         return self.controller
