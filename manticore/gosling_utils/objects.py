@@ -333,6 +333,8 @@ class Vector3:
     def flatten(self):
         #Sets Z (Vector3[2]) to 0
         return Vector3(self[0],self[1],0)
+    def dist(self, other):
+        return (self - other).magnitude()
     def render(self):
         #Returns a list with the x and y values, to be used with pygame
         return [self[0],self[1]]
