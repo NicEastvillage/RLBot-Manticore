@@ -126,3 +126,31 @@ def sign(x):
 def steerPD(angle, rate):
     #A Proportional-Derivative control loop used for defaultPD
     return cap(((35*(angle+rate))**3)/10, -1.0, 1.0)
+
+def argmax(list, score_func=None):
+    #If a score function is provided, the element with the highest score and the score is returned
+    #If not, the index of highest element in the list is returned
+    scores = list if score_func is None else [score_func(e) for e in list]
+    best_index = 0
+    best_score = scores[0]
+    for i, score in enumerate(scores):
+        if score > best_score:
+            best_index = i
+            best_score = score
+    if score_func is None:
+        return best_index
+    return list[best_index], best_score
+
+def argmin(list, score_func=None):
+    #If a score function is provided, the element with the lowest score and the score is returned
+    #If not, the index of lowest element in the list is returned
+    scores = list if score_func is None else [score_func(e) for e in list]
+    best_index = 0
+    best_score = scores[0]
+    for i, score in enumerate(scores):
+        if score < best_score:
+            best_index = i
+            best_score = score
+    if score_func is None:
+        return best_index
+    return list[best_index], best_score
