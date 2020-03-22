@@ -136,6 +136,7 @@ class car_object:
             self.update(packet)
         self.possession = 0
         self.objective = Objective.GO_FOR_IT
+        self.last_objective = Objective.GO_FOR_IT
     def local(self,value):
         #Shorthand for self.matrix.dot(value)
         return self.orientation.dot(value)

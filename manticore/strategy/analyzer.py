@@ -49,13 +49,19 @@ class GameAnalyzer:
 
         # Objectives
         for car in agent.all_cars:
+            car.last_objective = car.objective
             car.objective = Objective.UNKNOWN
-        attacker, attacker_score = argmax(agent.friends + [agent.me], lambda ally: ally.possession * (10_000 - side(ally.team) * ally.location.y) / 20_000)
+        attacker, attacker_score = argmax(agent.friends + [agent.me],
+                                          lambda ally: (0.1 if ally.last_objective == Objective.GO_FOR_IT else 0)
+                                                       + ally.possession * (10_000 - side(ally.team) * ally.location.y) / 20_000)
         attacker.objective = Objective.GO_FOR_IT
         follower_expected_location = (agent.ball.location + agent.friend_goal.location) * 0.5
         follower, follower_score = argmin([ally for ally in agent.friends + [agent.me] if ally.objective == Objective.UNKNOWN],
-                                          lambda ally: ally.location.dist(follower_expected_location))
+                                          lambda ally: (-400 if ally.last_objective == Objective.FOLLOW_UP else 0)
+                                                        + ally.location.dist(follower_expected_location))
         follower.objective = Objective.FOLLOW_UP
         for car in agent.friends + [agent.me]:
             if car.objective == Objective.UNKNOWN:
                 car.objective = Objective.ROTATE_BACK_OR_DEF
+        if agent.me.objective != agent.me.last_objective:
+            agent.clear()

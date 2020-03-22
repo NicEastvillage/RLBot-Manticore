@@ -44,6 +44,12 @@ def defaultThrottle(agent, target_speed, direction = 1.0):
     agent.controller.boost = True if t > 150 and car_speed < 2275 and agent.controller.throttle == 1.0 else False
     return car_speed
 
+def atba(agent, target, velocity):
+    relative_target = target - agent.me.location
+    local_target = agent.me.local(relative_target)
+    defaultPD(agent, local_target)
+    defaultThrottle(agent, velocity)
+
 def in_field(point,radius):
     #determines if a point is inside the standard soccer field
     point = Vector3(abs(point[0]),abs(point[1]),abs(point[2]))
