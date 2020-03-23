@@ -19,22 +19,22 @@ class ExampleBot(GoslingAgent):
         }
 
     def run(agent):
-        if agent.team == 0:
-            agent.renderer.draw_string_3d(
-                agent.me.location + Vector3(0, 0, 40),
-                1, 1, str(agent.me.possession),
-                agent.renderer.create_color(255, int((1 - agent.me.possession) * 150) + 105, int(agent.me.possession * 150) + 105, 40)
-            )
-            agent.renderer.draw_string_3d(
-                agent.me.location + Vector3(0, 0, 90),
-                1, 1, repr(agent.me.objective),
-                agent.renderer.white()
-            )
+
+        agent.renderer.draw_string_3d(
+            agent.me.location + Vector3(0, 0, 40),
+            1, 1, str(agent.me.possession),
+            agent.renderer.create_color(255, int((1 - agent.me.possession) * 150) + 105, int(agent.me.possession * 150) + 105, 40)
+        )
+        agent.renderer.draw_string_3d(
+            agent.me.location + Vector3(0, 0, 90),
+            1, 1, repr(agent.me.objective),
+            agent.renderer.white()
+        )
 
         if len(agent.stack) == 0 and agent.kickoff_flag:
             agent.push(kickoff())
-        elif len(agent.stack) == 0:
-            # Nothing on stack, try to fulfil current objective
+        elif not agent.kickoff_flag:
+            # Decide behaviour based on objective
             if agent.me.objective == Objective.UNKNOWN:
                 print(f"Manticore {agent.index}: Unknown objective ?!?")
                 atba(agent, agent.ball.location, 2000)
