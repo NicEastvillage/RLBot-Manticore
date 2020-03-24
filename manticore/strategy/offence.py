@@ -9,7 +9,7 @@ class OffenceState:
     def run(self, agent):
         # Reconsider ever 0.5 when far away
         if len(agent.stack) > 0:
-            if agent.me.location.dist(agent.ball.location) > 1000 and agent.time % 0.5 == 0:
+            if agent.me.location.dist(agent.ball.location) > 1400 and agent.time % 0.5 == 0:
                 agent.clear()
 
         if len(agent.stack) == 0:
