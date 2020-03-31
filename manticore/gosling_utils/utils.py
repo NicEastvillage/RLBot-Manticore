@@ -40,7 +40,7 @@ def defaultThrottle(agent, target_speed, direction = 1.0):
     #accelerates the car to a desired speed using throttle and boost
     car_speed = agent.me.local(agent.me.velocity)[0]
     t = (target_speed * direction) - car_speed
-    agent.controller.throttle = cap((t**2) * sign(t)/1000, -1.0, 1.0)
+    agent.controller.throttle = cap((t**2) * sign(t)/500_000, -1.0, 1.0)
     agent.controller.boost = True if t > 150 and car_speed < 2275 and agent.controller.throttle == 1.0 else False
     return car_speed
 

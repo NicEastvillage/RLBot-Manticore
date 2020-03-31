@@ -27,7 +27,7 @@ class ExampleBot(GoslingAgent):
         )
         agent.renderer.draw_string_3d(
             agent.me.location + Vector3(0, 0, 90),
-            1, 1, repr(agent.me.objective),
+            1, 1, repr(agent.me.objective) + str(agent.me.onsite),
             agent.renderer.white()
         )
 

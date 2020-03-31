@@ -24,8 +24,9 @@ class GoslingAgent(BaseAgent):
         #A list of boosts
         self.boosts = []
         #goals
-        self.friend_goal = goal_object(self.team)
-        self.foe_goal = goal_object(not self.team)
+        self.goals = [goal_object(0), goal_object(1)]
+        self.friend_goal = self.goals[self.team]
+        self.foe_goal = self.goals[not self.team]
         #A list that acts as the routines stack
         self.stack = []
         #Game time
@@ -135,6 +136,7 @@ class car_object:
             self.team = packet.game_cars[self.index].team
             self.update(packet)
         self.possession = 0
+        self.onsite = False
         self.objective = Objective.GO_FOR_IT
         self.last_objective = Objective.GO_FOR_IT
     def local(self,value):
@@ -180,6 +182,7 @@ class goal_object:
     def __init__(self,team):
         team = 1 if team == 1 else -1
         self.location = Vector3(0, team * 5100, 320) #center of goal line
+        self.front_location = Vector3(0, team * 4700, 10)
         #Posts are closer to x=750, but this allows the bot to be a little more accurate
         self.left_post = Vector3(team * 850, team * 5100, 320)
         self.right_post = Vector3(-team * 850, team * 5100, 320)

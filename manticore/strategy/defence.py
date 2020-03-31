@@ -19,9 +19,9 @@ class RotateOrDefendState:
                 pad, _ = argmin(big_pads, lambda pad: pad.location.dist(agent.me.location)**0.5 + pad.location.dist(agent.friend_goal.location)**0.5)
                 agent.push(goto_boost(pad, agent.friend_goal.location))
             else:
-                dist_home = agent.me.location.dist(agent.friend_goal.location)
+                dist_home = agent.me.location.dist(agent.friend_goal.front_location)
                 if dist_home > 1400:
-                    atba(agent, agent.friend_goal.location, 2300)
+                    atba(agent, agent.friend_goal.front_location, 2300)
                 else:
                     # Chill in goal area
                     atba(agent, agent.ball.location, 100)
