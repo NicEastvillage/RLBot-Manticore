@@ -1,6 +1,6 @@
 from gosling_utils.objects import *
 from gosling_utils.routines import *
-from gosling_utils.tools import find_hits
+from gosling_utils.tools import find_hits, decide_kickoff_strategy
 from strategy.defence import RotateOrDefendState
 from strategy.followup import FollowUpState
 from strategy.offence import OffenceState
@@ -32,7 +32,7 @@ class ExampleBot(GoslingAgent):
         )
 
         if len(agent.stack) == 0 and agent.kickoff_flag:
-            agent.push(kickoff())
+            decide_kickoff_strategy(agent)
         elif not agent.kickoff_flag:
             # Decide behaviour based on objective
             if agent.me.objective == Objective.UNKNOWN:

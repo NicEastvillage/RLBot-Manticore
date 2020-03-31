@@ -74,3 +74,41 @@ def find_hits(agent,targets):
                             elif backward_flag and ball_location[2] <= 280 and slope > 0.25:
                                 hits[pair].append(jump_shot(ball_location,intercept_time,best_shot_vector,slope,-1))
     return hits
+
+
+def decide_kickoff_strategy(agent):
+    allies = agent.friends + [agent.me]
+    corner = [friend for friend in allies if abs(friend.location.y) < 3000]
+    back_corner = [friend for friend in allies if 3000 < abs(friend.location.y) < 4000]
+    back = [friend for friend in allies if 4000 < abs(friend.location.y)]
+    big_pads = [pad for pad in agent.boosts if pad.large and pad.active]
+    if agent.me in corner:
+        if len(corner) < 2 or side(agent.team) * agent.me.location.x > 0:
+            # Corner kickoff
+            agent.push(kickoff())
+        else:
+            # Tied for corner kickoff
+            agent.push(second_man_kickoff())
+    elif len(corner) > 0:
+        # Someone else is in the corner
+        if agent.me in back_corner or len(back_corner) == 0:
+            # Collect closest big boost pad
+            pad, _ = argmin(big_pads, lambda pad: pad.location.dist(agent.me.location))
+            agent.push(goto_boost(pad, agent.friend_goal.location))
+        else:
+            # We are back and someone is back corner
+            pad = [pad for pad in big_pads if pad.location.y * side(agent.team) > 100 and sign(pad.location.x) != sign(back_corner[0].location.x)][0]
+            agent.push(goto_boost(pad, agent.friend_goal.location))
+    # No one has corner
+    elif agent.me in back_corner:
+        if len(back_corner) < 2 or side(agent.team) * agent.me.location.x > 0:
+            # Corner kickoff
+            agent.push(kickoff())
+        else:
+            # Tied for corner kickoff
+            agent.push(second_man_kickoff())
+    elif len(back_corner) != 0:
+        agent.push(second_man_kickoff())
+    else:
+        # We are alone
+        agent.push(kickoff())

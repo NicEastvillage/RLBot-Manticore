@@ -329,6 +329,17 @@ class kickoff():
             #flip towards opponent goal
             agent.push(flip(agent.me.local(agent.foe_goal.location - agent.me.location)))
 
+
+class second_man_kickoff():
+    def run(self, agent):
+        target = agent.ball.location + Vector3(0, 200 * side(agent.team), 0)
+        local_target = agent.me.local(target - agent.me.location)
+        defaultPD(agent, local_target)
+        defaultThrottle(agent, 800)
+        if target.x != 0:
+            agent.pop()
+
+
 class recovery():
     #Point towards our velocity vector and land upright, unless we aren't moving very fast
     #A vector can be provided to control where the car points when it lands

@@ -18,13 +18,13 @@ class OffenceState:
                 targets = {"clear": (side(agent.team) * Vector3(-4100, 0, 0), side(agent.team) * Vector3(4100, 0, 0))}
                 shots = find_hits(agent, targets)
                 if len(shots["clear"]) > 0:
-                    agent.push(shots["clear"][min(3, len(shots["clear"]) - 1)])
+                    agent.push(shots["clear"][min(1, len(shots["clear"]) - 1)])
                 else:
                     agent.push(short_shot(agent.foe_goal.location))
             else:
                 targets = {"goal": (agent.foe_goal.left_post, agent.foe_goal.right_post)}
                 shots = find_hits(agent, targets)
                 if len(shots["goal"]) > 0:
-                    agent.push(shots["goal"][min(3, len(shots["goal"]) - 1)])
+                    agent.push(shots["goal"][min(1, len(shots["goal"]) - 1)])
                 else:
                     agent.push(short_shot(agent.foe_goal.location))
