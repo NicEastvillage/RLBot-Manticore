@@ -37,6 +37,6 @@ class ExampleBot(GoslingAgent):
             # Decide behaviour based on objective
             if agent.me.objective == Objective.UNKNOWN:
                 print(f"Manticore {agent.index}: Unknown objective ?!?")
-                atba(agent, agent.ball.location, 2000)
+                do_atba(agent, agent.ball.location, 2000)
             else:
                 agent.states[agent.me.objective].run(agent)

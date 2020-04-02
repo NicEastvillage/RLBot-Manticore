@@ -160,11 +160,13 @@ class ball_object:
         self.location = Vector3(0,0,0)
         self.velocity = Vector3(0,0,0)
         self.latest_touched_time = 0
+        self.latest_touch_changed = False
         self.latest_touched_team = 0
     def update(self,packet):
         ball = packet.game_ball
         self.location.data = [ball.physics.location.x, ball.physics.location.y, ball.physics.location.z]
         self.velocity.data = [ball.physics.velocity.x, ball.physics.velocity.y, ball.physics.velocity.z]
+        self.latest_touch_changed = (self.latest_touched_time != ball.latest_touch.time_seconds)
         self.latest_touched_time = ball.latest_touch.time_seconds
         self.latest_touched_team = ball.latest_touch.team
 

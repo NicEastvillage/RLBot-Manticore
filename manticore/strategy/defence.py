@@ -1,5 +1,5 @@
 from gosling_utils.routines import goto_boost, short_shot
-from gosling_utils.utils import defaultPD, defaultThrottle, atba, argmin
+from gosling_utils.utils import defaultPD, defaultThrottle, do_atba, argmin
 
 
 class RotateOrDefendState:
@@ -21,7 +21,7 @@ class RotateOrDefendState:
             else:
                 dist_home = agent.me.location.dist(agent.friend_goal.front_location)
                 if dist_home > 1400:
-                    atba(agent, agent.friend_goal.front_location, 2300)
+                    do_atba(agent, agent.friend_goal.front_location, 2300)
                 else:
                     # Chill in goal area
-                    atba(agent, agent.ball.location, 100)
+                    do_atba(agent, agent.ball.location, 300)

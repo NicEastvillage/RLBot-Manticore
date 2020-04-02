@@ -83,7 +83,7 @@ def decide_kickoff_strategy(agent):
     back = [friend for friend in allies if 4000 < abs(friend.location.y)]
     big_pads = [pad for pad in agent.boosts if pad.large and pad.active]
     if agent.me in corner:
-        if len(corner) < 2 or side(agent.team) * agent.me.location.x > 0:
+        if len(corner) < 2 or side(agent.team) * agent.me.location.x < 0:
             # Corner kickoff
             agent.push(kickoff())
         else:
@@ -94,21 +94,24 @@ def decide_kickoff_strategy(agent):
         if agent.me in back_corner or len(back_corner) == 0:
             # Collect closest big boost pad
             pad, _ = argmin(big_pads, lambda pad: pad.location.dist(agent.me.location))
-            agent.push(goto_boost(pad, agent.friend_goal.location))
+            agent.push(goto_boost(pad, agent.friend_goal.location, may_flip=False))
         else:
-            # We are back and someone is back corner
+            # We are back and someone is back corner and corner
             pad = [pad for pad in big_pads if pad.location.y * side(agent.team) > 100 and sign(pad.location.x) != sign(back_corner[0].location.x)][0]
-            agent.push(goto_boost(pad, agent.friend_goal.location))
+            agent.push(goto_boost(pad, agent.ball.location, may_flip=False))
     # No one has corner
     elif agent.me in back_corner:
-        if len(back_corner) < 2 or side(agent.team) * agent.me.location.x > 0:
+        if len(back_corner) < 2 or side(agent.team) * agent.me.location.x < 0:
             # Corner kickoff
             agent.push(kickoff())
         else:
             # Tied for corner kickoff
             agent.push(second_man_kickoff())
-    elif len(back_corner) != 0:
+    elif len(back_corner) == 1:
         agent.push(second_man_kickoff())
+    elif len(back_corner) == 2:
+        pad = [pad for pad in big_pads if pad.location.y * side(agent.team) > 100 and sign(pad.location.x) != side(agent.team)][0]
+        agent.push(goto_boost(pad, agent.ball.location, may_flip=False))
     else:
         # We are alone
         agent.push(kickoff())

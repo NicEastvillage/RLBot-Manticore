@@ -175,9 +175,10 @@ class goto():
 class goto_boost():
     #very similar to goto() but designed for grabbing boost
     #if a target is provided the bot will try to be facing the target as it passes over the boost
-    def __init__(self,boost,target=None):
+    def __init__(self, boost, target=None, may_flip=True):
         self.boost = boost
         self.target = target
+        self.may_flip = may_flip
     def run(self,agent):
         car_to_boost = self.boost.location - agent.me.location
         distance_remaining = car_to_boost.flatten().magnitude()
@@ -196,7 +197,7 @@ class goto_boost():
             car_to_target = 0
             final_target = self.boost.location
 
-        #Some adjustment to the final target to ensure it's inside the field and we don't try to dirve through any goalposts to reach it
+        #Some adjustment to the final target to ensure it's inside the field and we don't try to drive through any goalposts to reach it
         if abs(agent.me.location[1]) > 5150: final_target[0] = cap(final_target[0],-750,750)
 
         local_target = agent.me.local(final_target - agent.me.location)
@@ -212,8 +213,8 @@ class goto_boost():
             agent.pop()
         elif agent.me.airborne:
             agent.push(recovery(self.target))
-        elif abs(angles[1]) < 0.05 and velocity > 600 and velocity < 2150 and (distance_remaining / velocity > 2.0 or (adjustment < 90 and car_to_target/velocity > 2.0)):
-            agent.push(flip(local_target))        
+        elif self.may_flip and abs(angles[1]) < 0.05 and 600 < velocity < 2150 and (distance_remaining / velocity > 2.0 or (adjustment < 90 and car_to_target / velocity > 2.0)):
+            agent.push(flip(local_target))
                
 class jump_shot():
     #Hits a target point at a target time towards a target direction
@@ -320,10 +321,10 @@ class kickoff():
     #A simple 1v1 kickoff that just drives up behind the ball and dodges
     #misses the boost on the slight-offcenter kickoffs haha
     def run(self,agent):
-        target = agent.ball.location + Vector3(0,200*side(agent.team),0)
+        target = agent.ball.location + Vector3(0,210*side(agent.team),0)
         local_target = agent.me.local(target - agent.me.location)
         defaultPD(agent, local_target)
-        defaultThrottle(agent, 2300)
+        defaultThrottle(agent, 2500)
         if local_target.magnitude() < 650:
             agent.pop()
             #flip towards opponent goal
@@ -332,7 +333,7 @@ class kickoff():
 
 class second_man_kickoff():
     def run(self, agent):
-        target = agent.ball.location + Vector3(0, 200 * side(agent.team), 0)
+        target = agent.ball.location + Vector3(0, 0.5 * agent.me.location.y * agent.team, 0)
         local_target = agent.me.local(target - agent.me.location)
         defaultPD(agent, local_target)
         defaultThrottle(agent, 800)
@@ -384,7 +385,7 @@ class short_shot():
         
         angles = defaultPD(agent, agent.me.local(final_target-agent.me.location))
         defaultThrottle(agent, 2300 if distance > 1600 else 2300-cap(1600*abs(angles[1]),0,2050))
-        agent.controller.boost = False if agent.me.airborne or abs(angles[1]) > 0.3 else agent.controller.boost
+        agent.controller.boost = False if abs(angles[1]) > 0.3 else agent.controller.boost
         agent.controller.handbrake = True if abs(angles[1]) > 2.3 else agent.controller.handbrake
 
         if abs(angles[1]) < 0.05 and (eta < 0.45 or distance < 150):
