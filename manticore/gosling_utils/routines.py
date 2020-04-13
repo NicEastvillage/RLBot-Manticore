@@ -163,7 +163,7 @@ class goto():
         agent.controller.handbrake = True if abs(angles[1]) > 2.3 else agent.controller.handbrake
 
         velocity = 1+agent.me.velocity.magnitude()
-        if distance_remaining < 350:
+        if distance_remaining < 300:
             agent.pop()
         elif abs(angles[1]) < 0.05 and velocity > 600 and velocity < 2150 and distance_remaining / velocity > 2.0:
             agent.push(flip(local_target))
@@ -209,7 +209,7 @@ class goto_boost():
         agent.controller.handbrake = True if abs(angles[1]) > 2.3 else agent.controller.handbrake
 
         velocity = 1+agent.me.velocity.magnitude()
-        if self.boost.active == False or agent.me.boost >= 99.0 or distance_remaining < 350:
+        if self.boost.active == False or agent.me.boost >= 99.0 or distance_remaining < 300:
             agent.pop()
         elif agent.me.airborne:
             agent.push(recovery(self.target))
@@ -321,11 +321,11 @@ class kickoff():
     #A simple 1v1 kickoff that just drives up behind the ball and dodges
     #misses the boost on the slight-offcenter kickoffs haha
     def run(self,agent):
-        target = agent.ball.location + Vector3(0,210*side(agent.team),0)
+        target = agent.ball.location + Vector3(0,0.35 * abs(agent.me.location.x)*side(agent.team),0)
         local_target = agent.me.local(target - agent.me.location)
         defaultPD(agent, local_target)
-        defaultThrottle(agent, 2500)
-        if local_target.magnitude() < 650:
+        defaultThrottle(agent, 2600)
+        if local_target.magnitude() < 800:
             agent.pop()
             #flip towards opponent goal
             agent.push(flip(agent.me.local(agent.foe_goal.location - agent.me.location)))
@@ -333,10 +333,10 @@ class kickoff():
 
 class second_man_kickoff():
     def run(self, agent):
-        target = agent.ball.location + Vector3(0, 0.5 * agent.me.location.y * agent.team, 0)
+        target = agent.ball.location + Vector3(0, 0.6 * agent.me.location.y * agent.team, 0)
         local_target = agent.me.local(target - agent.me.location)
         defaultPD(agent, local_target)
-        defaultThrottle(agent, 800)
+        defaultThrottle(agent, 700)
         if target.x != 0:
             agent.pop()
 
@@ -354,6 +354,7 @@ class recovery():
 
         defaultPD(agent,local_target)
         agent.controller.throttle = 1
+        agent.controller.boost = False
         if not agent.me.airborne:
             agent.pop()
 

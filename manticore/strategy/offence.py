@@ -10,8 +10,9 @@ class OffenceState:
     def run(self, agent):
         # Reconsider ever 0.5 when far away
         if len(agent.stack) > 0:
-            if (agent.me.location.dist(agent.ball.location) > 1700 and agent.time % 0.5 == 0)\
-                    or agent.ball.latest_touch_changed or agent.me.last_objective != Objective.GO_FOR_IT:
+            reconsider_time = agent.me.location.dist(agent.ball.location) > 1700 and agent.time % 0.5 == 0
+            conditions_changed = isinstance(agent.stack[-1], short_shot) and (agent.ball.latest_touch_changed or agent.me.last_objective != Objective.GO_FOR_IT)
+            if reconsider_time or conditions_changed:
                 agent.clear()
 
         if len(agent.stack) == 0:
