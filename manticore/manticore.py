@@ -1,42 +1,108 @@
-from gosling_utils.objects import *
-from gosling_utils.routines import *
-from gosling_utils.tools import find_hits, decide_kickoff_strategy
+from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
+from rlbot.utils.structures.game_data_struct import GameTickPacket
+
+from controllers.drive import DriveController
+from controllers.other import celebrate
+from controllers.shots import ShotController
+from maneuvers.kickoff import choose_kickoff_maneuver
+from strategy.analyzer import Objective, GameAnalyzer
 from strategy.defence import RotateOrDefendState
 from strategy.followup import FollowUpState
 from strategy.offence import OffenceState
+from util.info import GameInfo
+from util.vec import Vec3
 
-from strategy.utility_system import UtilitySystem, UtilityState
+RENDER = True
 
 
-class ExampleBot(GoslingAgent):
+class Manticore(BaseAgent):
+    def __init__(self, name, team, index):
+        super().__init__(name, team, index)
+        self.do_rendering = RENDER
+        self.info = None
+        self.analyzer = GameAnalyzer()
+        self.maneuver = None
+        self.doing_kickoff = False
 
-    def initialize_agent(self):
-        super().initialize_agent()
+        self.drive = DriveController()
+        self.shoot = ShotController()
+
         self.states = {
             Objective.GO_FOR_IT: OffenceState(),
             Objective.FOLLOW_UP: FollowUpState(),
             Objective.ROTATE_BACK_OR_DEF: RotateOrDefendState()
         }
 
-    def run(agent):
+    def initialize_agent(self):
+        self.info = GameInfo(self.index, self.team)
 
-        agent.renderer.draw_string_3d(
-            agent.me.location + Vector3(0, 0, 40),
-            1, 1, str(agent.me.possession),
-            agent.renderer.create_color(255, int((1 - agent.me.possession) * 150) + 105, int(agent.me.possession * 150) + 105, 40)
-        )
-        agent.renderer.draw_string_3d(
-            agent.me.location + Vector3(0, 0, 90),
-            1, 1, repr(agent.me.objective) + str(agent.me.onsite),
-            agent.renderer.white()
-        )
+    def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
+        # Read packet
+        if not self.info.field_info_loaded:
+            self.info.read_field_info(self.get_field_info())
+            if not self.info.field_info_loaded:
+                return SimpleControllerState()
+        self.info.read_packet(packet)
+        self.analyzer.update(self)
 
-        if len(agent.stack) == 0 and agent.kickoff_flag:
-            decide_kickoff_strategy(agent)
-        elif not agent.kickoff_flag:
-            # Decide behaviour based on objective
-            if agent.me.objective == Objective.UNKNOWN:
-                print(f"Manticore {agent.index}: Unknown objective ?!?")
-                do_atba(agent, agent.ball.location, 2000)
-            else:
-                agent.states[agent.me.objective].run(agent)
+        # Check if match is over
+        if packet.game_info.is_match_ended:
+            return celebrate(self)  # Assume we won!
+
+        self.renderer.begin_rendering()
+
+        controller = self.use_brain()
+
+        # Additional rendering
+        if self.do_rendering:
+            doing = str(self.info.my_car.objective) if self.maneuver is None else str(self.maneuver.__class__.__name__)
+            state_color = {
+                Objective.GO_FOR_IT: self.renderer.lime(),
+                Objective.FOLLOW_UP: self.renderer.yellow(),
+                Objective.ROTATE_BACK_OR_DEF: self.renderer.red()
+            }[self.info.my_car.objective]
+            if doing is not None:
+                self.renderer.draw_string_2d(330, 700 + self.index * 20, 1, 1, f"{self.name}:", self.renderer.team_color(alt_color=True))
+                self.renderer.draw_string_2d(500, 700 + self.index * 20, 1, 1, doing, state_color)
+                self.renderer.draw_rect_3d(self.info.my_car.pos + Vec3(z=60), 16, 16, True, state_color)
+
+        self.renderer.end_rendering()
+
+        # Save some stuff for next tick
+        self.feedback(controller)
+
+        return controller
+
+    def print(self, s):
+        team_name = "[BLUE]" if self.team == 0 else "[ORANGE]"
+        print("Manticore", self.index, team_name, ":", s)
+
+    def feedback(self, controller):
+        if controller is None:
+            self.print(f"None controller from state: {self.info.my_car.objective} & {self.maneuver.__class__}")
+        else:
+            self.info.my_car.last_input.roll = controller.roll
+            self.info.my_car.last_input.pitch = controller.pitch
+            self.info.my_car.last_input.yaw = controller.yaw
+            self.info.my_car.last_input.boost = controller.boost
+
+    def use_brain(self) -> SimpleControllerState:
+        # Check kickoff
+        if self.info.is_kickoff and not self.doing_kickoff:
+            self.maneuver = choose_kickoff_maneuver(self)
+            self.doing_kickoff = True
+            self.print("Kickoff - Hello world!")
+
+        # Execute logic
+        if self.maneuver is None or self.maneuver.done:
+            # There is no maneuver
+            self.maneuver = None
+            self.doing_kickoff = False
+
+            ctrl = self.states[self.info.my_car.objective].exec(self)
+            # The state has started a maneuver. Execute maneuver instead
+            if self.maneuver is not None:
+                return self.maneuver.exec(self)
+            return ctrl
+
+        return self.maneuver.exec(self)
