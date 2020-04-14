@@ -4,7 +4,7 @@ from controllers.aim_cone import AimCone
 from util import predict, rendering
 from util.info import Field
 from util.rlmath import clip01, lerp
-from util.vec import norm, Vec3
+from util.vec import norm, Vec3, normalize
 
 
 class OffenceState:
@@ -39,16 +39,30 @@ class OffenceState:
                 aim_cone.draw(bot, bot.shoot.ball_when_hit.pos, b=0)
 
         if not bot.shoot.can_shoot:
-            # We are out of position, start rotating back
-            own_goal = lerp(bot.info.own_goal.pos, bot.info.ball.pos, 0.5)
-            return bot.drive.towards_point(
-                bot,
-                own_goal,
-                target_vel=1460,
-                slide=False,
-                boost_min=0,
-                can_keep_speed=True
-            )
+            if bot.info.my_car.onsite:
+                # Atba with bias I guess
+                goal_to_own_goal_dir = normalize(bot.info.own_goal.pos - bot.info.ball.pos)
+                target = bot.info.ball.pos + goal_to_own_goal_dir * 40
+                # FIXME: This is ground only
+                return bot.drive.towards_point(
+                    bot,
+                    target,
+                    target_vel=2000,
+                    slide=False,
+                    boost_min=30,
+                    can_keep_speed=True
+                )
+            else:
+                # We are out of position, start rotating back
+                own_goal = lerp(bot.info.own_goal.pos, bot.info.ball.pos, 0.5)
+                return bot.drive.towards_point(
+                    bot,
+                    own_goal,
+                    target_vel=1460,
+                    slide=False,
+                    boost_min=0,
+                    can_keep_speed=True
+                )
         else:
             # Shoot!
             if bot.shoot.using_curve and bot.do_rendering:

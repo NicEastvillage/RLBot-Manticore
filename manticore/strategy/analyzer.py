@@ -59,8 +59,8 @@ class GameAnalyzer:
                                           lambda ally: ((0.06 if ally.last_objective == Objective.GO_FOR_IT else 0)
                                                         + (0.02 if ally.index == bot.index else 0)
                                                         + ally.boost / 490
-                                                        - (0.26 if ally.index == thirdman_index else 0)
-                                                        - (0.22 if not ally.onsite else 0)
+                                                        - (0.21 if ally.index == thirdman_index else 0)
+                                                        - (0.4 if not ally.onsite else 0)
                                                         + ally.possession * (10_000 - ally.team_sign * ally.pos.y) / 20_000)**2)
         attacker.objective = Objective.GO_FOR_IT
         follower_expected_pos = (ball.pos + bot.info.own_goal.pos) * 0.5
