@@ -1,7 +1,7 @@
 from rlbot.agents.base_agent import SimpleControllerState
 from rlbot.messages.flat import GameTickPacket, FieldInfo
 
-from strategy.analyzer import Objective
+from strategy.objective import Objective
 from util.rlmath import clip
 from util.vec import Vec3, Mat33, euler_to_rotation, angle_between, norm
 
@@ -55,6 +55,7 @@ class Car:
         self.objective = Objective.UNKNOWN
         self.possession = 0
         self.onsite = False
+        self.reach_ball_time = 0
 
     @property
     def forward(self) -> Vec3:
@@ -87,8 +88,8 @@ class Goal:
     def __init__(self, team: int):
         team_sign = -1 if team == 0 else 1
         self.pos = Vec3(0, team_sign * Field.LENGTH2, 0)
-        self.right_post = Vec3((Goal.WIDTH2 - 30) * team_sign, -Field.LENGTH2 * team_sign, 0)
-        self.left_post = Vec3(-(Goal.WIDTH2 - 30) * team_sign, -Field.LENGTH2 * team_sign, 0)
+        self.right_post = Vec3(-(Goal.WIDTH2 - 30) * team_sign, team_sign * Field.LENGTH2, 0)
+        self.left_post = Vec3((Goal.WIDTH2 - 30) * team_sign, team_sign * Field.LENGTH2, 0)
         self.front = self.pos * 0.86  # A spot in front the goal
 
 

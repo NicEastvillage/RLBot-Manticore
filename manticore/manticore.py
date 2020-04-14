@@ -5,10 +5,12 @@ from controllers.drive import DriveController
 from controllers.other import celebrate
 from controllers.shots import ShotController
 from maneuvers.kickoff import choose_kickoff_maneuver
-from strategy.analyzer import Objective, GameAnalyzer
+from strategy.analyzer import GameAnalyzer
 from strategy.defence import RotateOrDefendState
 from strategy.followup import FollowUpState
+from strategy.objective import Objective
 from strategy.offence import OffenceState
+from util import rendering, predict
 from util.info import GameInfo
 from util.vec import Vec3
 
@@ -65,6 +67,8 @@ class Manticore(BaseAgent):
                 self.renderer.draw_string_2d(330, 700 + self.index * 20, 1, 1, f"{self.name}:", self.renderer.team_color(alt_color=True))
                 self.renderer.draw_string_2d(500, 700 + self.index * 20, 1, 1, doing, state_color)
                 self.renderer.draw_rect_3d(self.info.my_car.pos + Vec3(z=60), 16, 16, True, state_color)
+            reach_pos = predict.ball_predict(self, self.info.my_car.reach_ball_time).pos
+            self.renderer.draw_line_3d(self.info.my_car.pos, reach_pos, self.renderer.white())
 
         self.renderer.end_rendering()
 

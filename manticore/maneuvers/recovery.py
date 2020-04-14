@@ -10,6 +10,8 @@ class RecoveryManeuver(AerialTurnManeuver):
     @staticmethod
     def find_landing_orientation(car: Car) -> Mat33:
 
+        # FIXME: If we knew the arena's mesh we could test if we are landing or a wall or something
+
         forward = normalize(xy(car.vel)) if norm(xy(car.vel)) > 20 else car.forward
         up = Vec3(z=1)
         left = cross(up, forward)
