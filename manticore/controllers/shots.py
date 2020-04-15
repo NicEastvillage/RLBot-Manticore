@@ -8,16 +8,12 @@ from util.curves import curve_from_arrival_dir
 from util.info import Field, Ball
 from util.predict import ball_predict, next_ball_landing
 from util.rlmath import clip
-from util.vec import angle_between, xy, dot, norm, proj_onto_size, normalize
+from util.vec import angle_between, xy, dot, norm, proj_onto_size, normalize, Vec3, axis_to_rotation
 
 
 class ShotController:
     def __init__(self):
         self.controls = SimpleControllerState()
-        self.dodge = None
-        self.last_point = None
-        self.last_dodge_end_time = 0
-        self.dodge_cooldown = 0.26
         self.recovery = None
         self.aim_is_ok = False
         self.waits_for_fall = False
@@ -107,7 +103,7 @@ class ShotController:
                     bot.drive.start_dodge(bot)
 
                 offset_point = xy(ball_soon.pos) - 50 * aim_cone.get_center_dir()
-                speed = self.determine_speed(norm(car_to_ball_soon), time)
+                speed = self._determine_speed(norm(car_to_ball_soon), time)
                 self.controls = bot.drive.towards_point(bot, offset_point, target_vel=speed, slide=True, boost_min=0, can_keep_speed=False)
                 return self.controls
 
@@ -130,7 +126,7 @@ class ShotController:
                         and aim_cone.contains_direction(car_to_ball_soon) and vel_towards_ball_soon > 300:
                     bot.drive.start_dodge(bot)
 
-                speed = self.determine_speed(norm(car_to_ball_soon), time)
+                speed = self._determine_speed(norm(car_to_ball_soon), time)
                 self.controls = bot.drive.towards_point(bot, self.curve_point, target_vel=speed, slide=True, boost_min=0, can_keep_speed=False)
                 return self.controls
 
@@ -153,7 +149,28 @@ class ShotController:
                 self.ball_is_flying = True
                 pass  # Aim is ok, but ball is in the air
 
-    def determine_speed(self, dist, time):
+    def towards(self, bot, target: Vec3, time: float, allowed_uncertainty: float = 0.3, dodge_hit: bool = True):
+
+        ball_soon = ball_predict(bot, time)
+        ball_soon_to_target_dir = normalize(target - ball_soon.pos)
+        right = dot(axis_to_rotation(Vec3(z=allowed_uncertainty)), ball_soon_to_target_dir)
+        left = dot(axis_to_rotation(Vec3(z=-allowed_uncertainty)), ball_soon_to_target_dir)
+        aim_cone = AimCone(right, left)
+
+        aim_cone.draw(bot, ball_soon.pos, r=0, g=0)
+
+        return self.with_aiming(bot, aim_cone, time, dodge_hit)
+
+    def any_touch(self, bot, time: float, dodge_hit: bool = True):
+
+        ball_soon = ball_predict(bot, time)
+        car_to_ball = ball_soon.pos - bot.info.my_car.pos
+
+        return self.towards(bot, ball_soon.pos + car_to_ball, time, dodge_hit) or SimpleControllerState()
+
+
+    @staticmethod
+    def _determine_speed(dist, time):
         if time == 0:
             return 2300
         elif dist < 1700:

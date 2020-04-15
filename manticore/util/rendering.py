@@ -42,3 +42,9 @@ def draw_bezier(bot, points: List[Vec3], time_step: float=0.05):
         current_point = bezier(time, points)
         bot.renderer.draw_line_3d(last_point, current_point, bot.renderer.create_color(255, 180, 255, 210))
         last_point = current_point
+
+
+def draw_cross(bot, point: Vec3, color, arm_length=30):
+    bot.renderer.draw_line_3d(point + Vec3(x=arm_length), point + Vec3(x=-arm_length), color)
+    bot.renderer.draw_line_3d(point + Vec3(y=arm_length), point + Vec3(y=-arm_length), color)
+    bot.renderer.draw_line_3d(point + Vec3(z=arm_length), point + Vec3(z=-arm_length), color)

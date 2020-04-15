@@ -35,34 +35,34 @@ class OffenceState:
         if bot.do_rendering:
             if bot.shoot.can_shoot:
                 aim_cone.draw(bot, bot.shoot.ball_when_hit.pos, b=0, r=0)
-            else:
-                aim_cone.draw(bot, bot.shoot.ball_when_hit.pos, b=0)
 
         if not bot.shoot.can_shoot:
-            if bot.info.my_car.onsite:
-                # Atba with bias I guess
-                goal_to_own_goal_dir = normalize(bot.info.own_goal.pos - bot.info.ball.pos)
-                target = bot.info.ball.pos + goal_to_own_goal_dir * 40
-                # FIXME: This is ground only
-                return bot.drive.towards_point(
-                    bot,
-                    target,
-                    target_vel=2000,
-                    slide=False,
-                    boost_min=30,
-                    can_keep_speed=True
-                )
-            else:
-                # We are out of position, start rotating back
-                own_goal = lerp(bot.info.own_goal.pos, bot.info.ball.pos, 0.5)
-                return bot.drive.towards_point(
-                    bot,
-                    own_goal,
-                    target_vel=1460,
-                    slide=False,
-                    boost_min=0,
-                    can_keep_speed=True
-                )
+            # We can't shoot on target
+            if len(bot.info.teammates) != 0:
+                # Consider passing
+                for mate in bot.info.teammates:
+                    point_in_front_of_mate = lerp(mate.pos, bot.info.opp_goal.pos, 0.5)
+                    shot_ctrls = bot.shoot.towards(bot, point_in_front_of_mate, bot.info.my_car.reach_ball_time)
+                    if bot.shoot.can_shoot:
+                        if bot.do_rendering:
+                            rendering.draw_cross(bot, point_in_front_of_mate, bot.renderer.green())
+                        return shot_ctrls
+
+            # Atba with bias I guess
+            if bot.do_rendering:
+                bot.renderer.draw_line_3d(bot.info.my_car.pos, pred_ball.pos, bot.renderer.red())
+            return bot.shoot.any_touch(bot, bot.info.my_car.reach_ball_time)
+
+            # # We are out of position, start rotating back
+            # own_goal = lerp(bot.info.own_goal.pos, bot.info.ball.pos, 0.5)
+            # return bot.drive.towards_point(
+            #     bot,
+            #     own_goal,
+            #     target_vel=1460,
+            #     slide=False,
+            #     boost_min=0,
+            #     can_keep_speed=True
+            # )
         else:
             # Shoot!
             if bot.shoot.using_curve and bot.do_rendering:
