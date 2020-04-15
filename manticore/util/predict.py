@@ -1,6 +1,6 @@
 import math
 
-from util.info import GRAVITY, Ball, Field
+from util.info import GRAVITY, Ball, Field, Goal
 from util.rlmath import clip, lerp, clip01
 from util.vec import norm, proj_onto_size, xy, Vec3
 
@@ -139,8 +139,8 @@ def will_ball_hit_goal(bot):
     if ball.vel.y == 0:
         return UncertainEvent(False, 1e306)
 
-    time = (Field.LENGTH / 2 - abs(ball.pos.y)) / abs(ball.vel.y)
+    time = (Field.LENGTH2 - abs(ball.pos.y)) / abs(ball.vel.y)
     hit_pos = ball_predict(bot, time).pos
-    hits_goal = abs(hit_pos.x) < Field.GOAL_WIDTH / 2 + Ball.RADIUS
+    hits_goal = abs(hit_pos.x) < Goal.WIDTH2 + Ball.RADIUS
 
     return UncertainEvent(hits_goal, time)

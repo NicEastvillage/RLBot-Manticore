@@ -1,6 +1,10 @@
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlbot.utils.structures.game_data_struct import GameTickPacket
 
+from behaviour.carry import Carry
+from behaviour.clear_ball import ClearBall
+from behaviour.save_goal import SaveGoal
+from behaviour.shoot_at_goal import ShootAtGoal
 from controllers.drive import DriveController
 from controllers.other import celebrate
 from controllers.shots import ShotController
@@ -10,6 +14,7 @@ from strategy.defence import RotateOrDefendState
 from strategy.followup import FollowUpState
 from strategy.objective import Objective
 from strategy.offence import OffenceState
+from strategy.utility_system import UtilitySystem
 from util import rendering, predict
 from util.info import GameInfo
 from util.vec import Vec3
@@ -22,21 +27,23 @@ class Manticore(BaseAgent):
         super().__init__(name, team, index)
         self.do_rendering = RENDER
         self.info = None
+        self.ut = None
         self.analyzer = GameAnalyzer()
+        self.choice = None
         self.maneuver = None
         self.doing_kickoff = False
 
         self.drive = DriveController()
         self.shoot = ShotController()
 
-        self.states = {
-            Objective.GO_FOR_IT: OffenceState(),
-            Objective.FOLLOW_UP: FollowUpState(),
-            Objective.ROTATE_BACK_OR_DEF: RotateOrDefendState()
-        }
-
     def initialize_agent(self):
         self.info = GameInfo(self.index, self.team)
+        self.ut = UtilitySystem([
+            ShootAtGoal(),
+            SaveGoal(self),
+            ClearBall(self),
+            Carry()
+        ])
 
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
         # Read packet
@@ -57,15 +64,16 @@ class Manticore(BaseAgent):
 
         # Additional rendering
         if self.do_rendering:
-            doing = str(self.info.my_car.objective) if self.maneuver is None else str(self.maneuver.__class__.__name__)
+            doing = self.maneuver or self.choice
             state_color = {
                 Objective.GO_FOR_IT: self.renderer.lime(),
                 Objective.FOLLOW_UP: self.renderer.yellow(),
-                Objective.ROTATE_BACK_OR_DEF: self.renderer.red()
+                Objective.ROTATE_BACK_OR_DEF: self.renderer.red(),
+                Objective.UNKNOWN: self.renderer.team_color(alt_color=True)
             }[self.info.my_car.objective]
             if doing is not None:
                 self.renderer.draw_string_2d(330, 700 + self.index * 20, 1, 1, f"{self.name}:", self.renderer.team_color(alt_color=True))
-                self.renderer.draw_string_2d(500, 700 + self.index * 20, 1, 1, doing, state_color)
+                self.renderer.draw_string_2d(500, 700 + self.index * 20, 1, 1, doing.__class__.__name__, state_color)
                 self.renderer.draw_rect_3d(self.info.my_car.pos + Vec3(z=60), 16, 16, True, state_color)
             reach_pos = predict.ball_predict(self, self.info.my_car.reach_ball_time).pos
             self.renderer.draw_line_3d(self.info.my_car.pos, reach_pos, self.renderer.white())
@@ -99,14 +107,17 @@ class Manticore(BaseAgent):
 
         # Execute logic
         if self.maneuver is None or self.maneuver.done:
-            # There is no maneuver
+            # There is no maneuver (anymore)
             self.maneuver = None
             self.doing_kickoff = False
 
-            ctrl = self.states[self.info.my_car.objective].exec(self)
+            self.choice = self.ut.get_best_state(self)
+            ctrl = self.choice.run(self)
+
             # The state has started a maneuver. Execute maneuver instead
             if self.maneuver is not None:
                 return self.maneuver.exec(self)
+
             return ctrl
 
         return self.maneuver.exec(self)
