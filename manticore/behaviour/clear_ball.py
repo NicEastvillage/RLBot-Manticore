@@ -33,7 +33,7 @@ class ClearBall(UtilityState):
             Objective.UNKNOWN: 0,
             Objective.GO_FOR_IT: 0.1,
             Objective.FOLLOW_UP: 0,
-            Objective.ROTATE_BACK_OR_DEF: 0.1,
+            Objective.ROTATE_BACK_OR_DEF: 0.0,
         }[bot.info.my_car.objective]
 
         return ball_own_half_01 * in_position + obj_bonus

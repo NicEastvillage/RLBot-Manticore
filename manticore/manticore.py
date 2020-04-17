@@ -3,6 +3,8 @@ from rlbot.utils.structures.game_data_struct import GameTickPacket
 
 from behaviour.carry import Carry
 from behaviour.clear_ball import ClearBall
+from behaviour.defend_goal import DefendGoal
+from behaviour.follow_up import PrepareFollowUp
 from behaviour.save_goal import SaveGoal
 from behaviour.shoot_at_goal import ShootAtGoal
 from controllers.drive import DriveController
@@ -42,7 +44,9 @@ class Manticore(BaseAgent):
             ShootAtGoal(),
             SaveGoal(self),
             ClearBall(self),
-            Carry()
+            Carry(),
+            DefendGoal(),
+            PrepareFollowUp()
         ])
 
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:

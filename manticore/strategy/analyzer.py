@@ -56,8 +56,7 @@ class GameAnalyzer:
             car.objective = Objective.UNKNOWN
         thirdman_index, _ = argmin(bot.info.team_cars, lambda ally: norm(ally.pos - bot.info.own_goal.pos))
         attacker, attacker_score = argmax(bot.info.team_cars,
-                                          lambda ally: ((0.06 if ally.last_objective == Objective.GO_FOR_IT else 0)
-                                                        + (0.02 if ally.index == bot.index else 0)
+                                          lambda ally: ((0.09 if ally.last_objective == Objective.GO_FOR_IT else 0)
                                                         + ally.boost / 490
                                                         - (0.21 if ally.index == thirdman_index else 0)
                                                         - (0.4 if not ally.onsite else 0)
@@ -65,8 +64,7 @@ class GameAnalyzer:
         attacker.objective = Objective.GO_FOR_IT
         follower_expected_pos = (ball.pos + bot.info.own_goal.pos) * 0.5
         follower, follower_score = argmin([ally for ally in bot.info.team_cars if ally.objective == Objective.UNKNOWN],
-                                          lambda ally: (-400 if ally.last_objective == Objective.FOLLOW_UP else 0)
-                                                        #+ (200 if ally.index == agent.index else 0)
+                                          lambda ally: (-500 if ally.last_objective == Objective.FOLLOW_UP else 0)
                                                         - ally.boost * 2
                                                         + (1100 if ally.index == thirdman_index else 0)
                                                         + (200 if not ally.onsite else 0)

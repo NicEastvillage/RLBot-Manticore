@@ -9,7 +9,7 @@ from maneuvers.recovery import RecoveryManeuver
 from util import rendering
 from util.info import Field, is_near_wall, Goal
 from util.rlmath import lerp, sign, clip
-from util.vec import Vec3, angle_between, xy, dot, norm, proj_onto_size
+from util.vec import Vec3, angle_between, xy, dot, norm, proj_onto_size, normalize
 
 
 class DriveController:
@@ -169,21 +169,29 @@ class DriveController:
             if bot.do_rendering:
                 bot.renderer.draw_line_3d(car.pos, point, bot.renderer.green())
 
-    def home(self, bot):
+    def stay_at(self, bot, point: Vec3, looking_at: Vec3):
+
+        OKAY_DIST = 100
+
         car = bot.info.my_car
-        home = bot.info.own_goal.pos
-        target = home
+        car_to_point = point - car.pos
+        car_to_point_dir = normalize(point - car.pos)
+        dist = norm(car_to_point)
 
-        closest_enemy, enemy_dist = bot.info.closest_enemy(bot.info.ball.pos)
+        if dist > OKAY_DIST:
+            return self.towards_point(bot, point, int(dist * 2))
+        else:
+            look_dir = normalize(looking_at - car.pos)
+            facing_correctly = dot(car.forward, look_dir) > 0.9
+            if facing_correctly:
+                return SimpleControllerState()
+            else:
+                ctrls = SimpleControllerState()
+                ctrls.throttle = 0.7 * sign(dot(car.forward, car_to_point_dir))
+                ctrls.steer = -ctrls.throttle * sign(dot(car.left, car_to_point_dir))
 
-        car_to_home = home - car.pos
-        dist = norm(car_to_home)
-        vel_f_home = proj_onto_size(car.vel, car_to_home)
+                return ctrls
 
-        if vel_f_home * 2 > dist:
-            target = bot.info.ball.pos
+    def home(self, bot):
 
-        boost = 40 - (dist / 100) + enemy_dist / 200
-        dodge = dist > 1500 or enemy_dist < dist
-
-        return self.towards_point(bot, target, 2300, True, boost_min=boost, can_dodge=dodge)
+        return self.stay_at(bot, bot.info.own_goal.pos, bot.info.ball.pos)
