@@ -1,81 +1,75 @@
-from enum import Enum
-
-from gosling_utils.utils import argmax, side, argmin
-
-
-class Objective(Enum):
-    GO_FOR_IT = 0
-    FOLLOW_UP = 1
-    ROTATE_BACK_OR_DEF = 2
-    UNKNOWN = 3
+from strategy.objective import Objective
+from util import predict
+from util.rlmath import argmin, argmax, clip01
+from util.vec import norm, normalize, dot
 
 
 class GameAnalyzer:
     def __init__(self):
-        self.closest_foe_to_ball = None
-        self.closest_foe_to_ball_dist = 99999
+        self.opp_closest_to_ball = None
+        self.opp_closest_to_ball_dist = 99999
         self.car_with_possession = None
         self.ally_with_possession = None
-        self.foe_with_possession = None
+        self.opp_with_possession = None
+        self.first_to_reach_ball = None
 
-    def update(self, agent):
+    def update(self, bot):
+        ball = bot.info.ball
+
         # Find closest foe to ball
-        self.closest_foe_to_ball = None
-        self.closest_foe_to_ball_dist = 99999
-        for foe in agent.foes:
-            dist = foe.location.dist(agent.ball.location)
-            if dist < self.closest_foe_to_ball_dist:
-                self.closest_foe_to_ball = foe
-                self.closest_foe_to_ball_dist = dist
+        self.opp_closest_to_ball, self.opp_closest_to_ball_dist = argmin(bot.info.opponents, lambda opp: norm(opp.pos - ball.pos))
 
-        # Possession
+        # Possession and on/off-site
         self.car_with_possession = None
         self.ally_with_possession = None
-        self.foe_with_possession = None
-        for car in agent.all_cars:
-            point_in_front = car.location + car.orientation.forward * (car.velocity.magnitude())
-            ball_point_dist = agent.ball.location.dist(point_in_front)
-            dist01 = 1500 / (1500 + ball_point_dist)  # Halves every 1500 uu of dist
-            car_to_ball = agent.ball.location - car.location
-            car_to_ball_unit, car_ball_dist = car_to_ball.normalize(True)
-            in_front01 = car.orientation.forward.dot(car_to_ball_unit)
-            car.possession = dist01 * in_front01
-            if self.car_with_possession is None or car.possession > self.car_with_possession.possession:
-                self.car_with_possession = car
-            if car.team == agent.team and (self.ally_with_possession is None or car.possession > self.ally_with_possession.possession):
-                self.ally_with_possession = car
-            if car.team != agent.team and (self.foe_with_possession is None or car.possession > self.foe_with_possession.possession):
-                self.foe_with_possession = car
+        self.opp_with_possession = None
+        for car in bot.info.cars:
 
             # On site
-            own_goal = agent.goals[car.team]
-            ball_to_goal = own_goal.location - agent.ball.location
-            car_to_ball = agent.ball.location - car.location
-            car.onsite = ball_to_goal.dot(car_to_ball) <= 0
+            own_goal = bot.info.goals[car.team]
+            ball_to_goal = own_goal.pos - ball.pos
+            car_to_ball = ball.pos - car.pos
+            car.onsite = dot(ball_to_goal, car_to_ball) < 0.1
 
+            # Reach ball time
+            car.reach_ball_time = predict.time_till_reach_ball(car, ball)
+            reach01 = clip01((5 - car.reach_ball_time) / 5)
+
+            # Possession
+            point_in_front = car.pos + car.vel * 0.6
+            ball_point_dist = norm(ball.pos - point_in_front)
+            dist01 = 1500 / (1500 + ball_point_dist)  # Halves every 1500 uu of dist
+            car_to_ball = bot.info.ball.pos - car.pos
+            car_to_ball_unit = normalize(car_to_ball)
+            in_front01 = dot(car.forward, car_to_ball_unit)
+            car.possession = dist01 * in_front01 * reach01 * 3
+            if self.car_with_possession is None or car.possession > self.car_with_possession.possession:
+                self.car_with_possession = car
+            if car.team == bot.team and (self.ally_with_possession is None or car.possession > self.ally_with_possession.possession):
+                self.ally_with_possession = car
+            if car.team != bot.team and (self.opp_with_possession is None or car.possession > self.opp_with_possession.possession):
+                self.opp_with_possession = car
 
         # Objectives
-        for car in agent.all_cars:
+        for car in bot.info.cars:
             car.last_objective = car.objective
             car.objective = Objective.UNKNOWN
-        thirdman_index, _ = argmin(agent.friends + [agent.me], lambda ally: ally.location.dist(agent.friend_goal.location))
-        attacker, attacker_score = argmax(agent.friends + [agent.me],
-                                          lambda ally: ((0.05 if ally.last_objective == Objective.GO_FOR_IT else 0)
-                                                        + (0.03 if ally.index == agent.index else 0)
-                                                        + ally.boost / 500
-                                                        - (0.24 if ally.index == thirdman_index else 0)
-                                                        - (0.2 if not ally.onsite else 0)
-                                                        + ally.possession * (10_000 - side(ally.team) * ally.location.y) / 20_000)**2)
+        thirdman_index, _ = argmin(bot.info.team_cars, lambda ally: norm(ally.pos - bot.info.own_goal.pos))
+        attacker, attacker_score = argmax(bot.info.team_cars,
+                                          lambda ally: ((0.09 if ally.last_objective == Objective.GO_FOR_IT else 0)
+                                                        + ally.boost / 490
+                                                        - (0.21 if ally.index == thirdman_index else 0)
+                                                        - (0.4 if not ally.onsite else 0)
+                                                        + ally.possession * (10_000 - ally.team_sign * ally.pos.y) / 20_000)**2)
         attacker.objective = Objective.GO_FOR_IT
-        follower_expected_location = (agent.ball.location + agent.friend_goal.location) * 0.5
-        follower, follower_score = argmin([ally for ally in agent.friends + [agent.me] if ally.objective == Objective.UNKNOWN],
-                                          lambda ally: (-400 if ally.last_objective == Objective.FOLLOW_UP else 0)
-                                                        #+ (200 if ally.index == agent.index else 0)
+        follower_expected_pos = (ball.pos + bot.info.own_goal.pos) * 0.5
+        follower, follower_score = argmin([ally for ally in bot.info.team_cars if ally.objective == Objective.UNKNOWN],
+                                          lambda ally: (-500 if ally.last_objective == Objective.FOLLOW_UP else 0)
                                                         - ally.boost * 2
                                                         + (1100 if ally.index == thirdman_index else 0)
                                                         + (200 if not ally.onsite else 0)
-                                                        + ally.location.dist(follower_expected_location))
+                                                        + norm(ally.pos - follower_expected_pos))
         follower.objective = Objective.FOLLOW_UP
-        for car in agent.friends + [agent.me]:
+        for car in bot.info.team_cars:
             if car.objective == Objective.UNKNOWN:
                 car.objective = Objective.ROTATE_BACK_OR_DEF

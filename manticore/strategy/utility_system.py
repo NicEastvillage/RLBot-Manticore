@@ -1,41 +1,52 @@
-class UtilitySystem:
+from typing import List
 
-    def __init__(self, states, last_choice_bias=0.1):
-        self.options = states
-        self.last_chosen_option = None
-        self.last_choise_bias = last_choice_bias
-        assert len(states) > 0, "Utility system has no options"
+from rlbot.agents.base_agent import SimpleControllerState
 
-    def get_best_state(self, agent):
-
-        best_option = self.options[0]
-        best_option_score = 0
-        for option in self.options:
-            score = option.utility_score(agent)
-            if option == self.last_chosen_option:
-                score += self.last_choise_bias
-            if score > best_option_score:
-                best_option = option
-                best_option_score = score
-        if self.last_chosen_option != best_option:
-            if self.last_chosen_option is not None:
-                self.last_chosen_option.end(agent)
-            best_option.begin(agent)
-
-        self.last_chosen_option = best_option
-
-        return best_option
+from util.rlmath import argmax
 
 
 class UtilityState:
-    def utility_score(self, agent):
+    def utility_score(self, bot) -> float:
         raise NotImplementedError
 
-    def run(self, agent):
+    def run(self, bot) -> SimpleControllerState:
+        raise NotImplementedError
+
+    def repeat_bias(self, bot) -> float:
+        return 0.1
+
+    def begin(self, bot):
         pass
 
-    def begin(self, agent):
+    def end(self, bot):
         pass
 
-    def end(self, agent):
-        pass
+
+class UtilitySystem:
+
+    def __init__(self, states: List[UtilityState]):
+        self.options = states
+        self.last_chosen_state = None
+        assert len(states) > 0, "Utility system has no options"
+
+    def get_best_state(self, bot):
+
+        def score(state: UtilityState):
+            if state != self.last_chosen_state:
+                return state.utility_score(bot)
+            return state.utility_score(bot) + state.repeat_bias(bot)
+
+        best_option, _ = argmax(self.options, score)
+
+        if self.last_chosen_state != best_option:
+            if self.last_chosen_state is not None:
+                self.last_chosen_state.end(bot)
+            best_option.begin(bot)
+
+        self.last_chosen_state = best_option
+
+        return best_option
+
+    def reset(self):
+        self.last_chosen_state.end()
+        self.last_chosen_state = None

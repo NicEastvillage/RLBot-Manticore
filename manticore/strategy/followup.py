@@ -1,34 +1,33 @@
-from gosling_utils.utils import defaultPD, defaultThrottle, side, do_atba
+from rlbot.agents.base_agent import SimpleControllerState
+
+from util.rlmath import lerp, inv_lerp
+from util.vec import norm, normalize, proj_onto_size, proj_onto
 
 
 class FollowUpState:
     def __init__(self):
         pass
 
-    def run(self, agent):
-        # Reconsider ever 0.5 when far away
-        if len(agent.stack) > 0:
-            if (agent.me.location.dist(agent.ball.location) > 1700 and agent.time % 0.5 == 0) or agent.ball.latest_touch_changed:
-                agent.clear()
+    def exec(self, bot):
 
-        if len(agent.stack) == 0:
-            if agent.me.location.dist(agent.ball.location) < 600 and agent.ball.location.y < 300:
-                # Just go!
-                do_atba(agent, agent.ball.location, 2300)
-            else:
-                # Count number of friends on the enemy side of the arena
-                committed_friends = [friend for friend in agent.friends if friend.location.y * side(friend.team) < 0]
-                many_committed_friends = len(committed_friends) <= len(agent.friends) / 2
-                if side(agent.team) * (agent.me.location.y - agent.ball.location.y) > 0 and many_committed_friends:
-                    # Approach ball medium speed
-                    relative_target = agent.ball.location - agent.me.location
-                    local_target = agent.me.local(relative_target)
-                    defaultPD(agent, local_target)
-                    defaultThrottle(agent, max(agent.me.location.dist(agent.ball.location) / 3, 200))
-                else:
-                    # We are on the wrong side of the ball
-                    relative_target = agent.friend_goal.location - agent.me.location
-                    local_target = agent.me.local(relative_target)
-                    defaultPD(agent, local_target)
-                    speed = 2300 if many_committed_friends else 1500
-                    defaultThrottle(agent, speed)
+        goal_to_ball = bot.info.ball.pos - bot.info.own_goal.pos
+        goal_to_car = bot.info.my_car.pos - bot.info.own_goal.pos
+
+        car_prj = proj_onto(goal_to_car, goal_to_ball)
+        target = lerp(bot.info.own_goal.pos + car_prj, lerp(bot.info.ball.pos, bot.info.opp_goal.pos, 0.4), 0.08)
+
+        if bot.do_rendering:
+            bot.renderer.draw_line_3d(bot.info.my_car.pos, target, bot.renderer.purple())
+
+        speed = max((norm(bot.info.my_car.pos - bot.info.ball.pos) - 900) * 0.6, 100)
+
+        return bot.drive.towards_point(
+            bot,
+            target,
+            target_vel=speed,
+            slide=True,
+            boost_min=0,
+            can_keep_speed=norm(bot.info.my_car.pos - bot.info.ball.pos) > 3000,
+            can_dodge=True,
+            wall_offset_allowed=125
+        )
