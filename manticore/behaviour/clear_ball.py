@@ -31,7 +31,7 @@ class ClearBall(UtilityState):
 
         obj_bonus = {
             Objective.UNKNOWN: 0,
-            Objective.GO_FOR_IT: 0.1,
+            Objective.GO_FOR_IT: 0.15,
             Objective.FOLLOW_UP: 0,
             Objective.ROTATE_BACK_OR_DEF: 0.0,
         }[bot.info.my_car.objective]

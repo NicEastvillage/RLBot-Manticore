@@ -29,7 +29,7 @@ class ShootAtGoal(UtilityState):
 
         arena_length2 = bot.info.team_sign * Field.LENGTH2
         own_half_01 = clip01(remap(arena_length2, -arena_length2, 0.0, 1.1, ball_soon.pos.y))
-        close_to_ball01 = clip01(1.0 * norm(car.pos - ball_soon.pos) / 3500) ** 0.5
+        close_to_ball01 = clip01(1.0 - norm(car.pos - ball_soon.pos) / 3500) ** 0.5
 
         reachable_ball = predict.ball_predict(bot, predict.time_till_reach_ball(bot.info.my_car, bot.info.ball))
         self.ball_to_goal_right = bot.info.opp_goal.right_post - reachable_ball.pos
