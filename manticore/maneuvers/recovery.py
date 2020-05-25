@@ -1,9 +1,9 @@
-from maneuvers.aerialturn import AerialTurnManeuver
+from maneuvers.aerialturn import PDAerialTurnManeuver
 from util.info import Car
 from util.vec import normalize, xy, Vec3, cross, Mat33, norm
 
 
-class RecoveryManeuver(AerialTurnManeuver):
+class RecoveryManeuver(PDAerialTurnManeuver):
     def __init__(self, bot):
         super().__init__(RecoveryManeuver.find_landing_orientation(bot.info.my_car))
 

@@ -69,7 +69,8 @@ class GameAnalyzer:
                                                         + (1100 if ally.index == thirdman_index else 0)
                                                         + (200 if not ally.onsite else 0)
                                                         + norm(ally.pos - follower_expected_pos))
-        follower.objective = Objective.FOLLOW_UP
+        if follower is not None:
+            follower.objective = Objective.FOLLOW_UP
         for car in bot.info.team_cars:
             if car.objective == Objective.UNKNOWN:
                 car.objective = Objective.ROTATE_BACK_OR_DEF

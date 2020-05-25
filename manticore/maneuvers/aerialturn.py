@@ -6,24 +6,21 @@ from maneuvers.maneuver import Maneuver
 
 
 from util.rlmath import sign0, clip
-from util.vec import transpose, dot, rotation_to_axis, Vec3, norm
+from util.vec import transpose, dot, rotation_to_axis, Vec3, norm, Mat33
 
 
 # Credits to chip
-class AerialTurnManeuver(Maneuver):
+class ChipAerialTurnManeuver(Maneuver):
     ALPHA_MAX = 9.0
 
-    def __init__(self, target, timeout=5.0, epsilon_ang_vel=0.01, epsilon_rotation=0.04):
+    def __init__(self, target, epsilon_ang_vel=0.01, epsilon_rotation=0.04):
         super().__init__()
 
         self.target = target
-        self.timeout = timeout
         self.epsilon_ang_vel = epsilon_ang_vel
         self.epsilon_rotation = epsilon_rotation
 
-        self._timer = 0.0
-
-    def exec(self, bot):
+    def exec(self, bot) -> SimpleControllerState:
 
         controls = SimpleControllerState()
         dt = bot.info.dt
@@ -51,16 +48,13 @@ class AerialTurnManeuver(Maneuver):
         ang_vel_next = car.ang_vel + alpha * dt
 
         # determine the controls that produce that angular velocity
-        roll_pitch_yaw = AerialTurnManeuver._aerial_rpy(car.ang_vel, ang_vel_next, car.rot, dt)
+        roll_pitch_yaw = ChipAerialTurnManeuver._aerial_rpy(car.ang_vel, ang_vel_next, car.rot, dt)
         controls.roll = roll_pitch_yaw.x
         controls.pitch = roll_pitch_yaw.y
         controls.yaw = roll_pitch_yaw.z
 
-        self._timer += dt
-
         if ((norm(car.ang_vel) < self.epsilon_ang_vel and
-             norm(geodesic_world) < self.epsilon_rotation) or
-                self._timer >= self.timeout or car.on_ground):
+             norm(geodesic_world) < self.epsilon_rotation) or car.on_ground):
             self.done = True
 
         controls.throttle = 1.0
@@ -149,3 +143,38 @@ def solve_PWL(a, b, c):
             return clip(xm, -1, 0)
 
     return 0
+
+
+class PDAerialTurnManeuver(Maneuver):
+
+    def __init__(self, target_rot: Mat33):
+        super().__init__()
+        self.target_rot = target_rot
+
+    def exec(self, bot) -> SimpleControllerState:
+
+        controls = SimpleControllerState()
+
+        car = bot.info.my_car
+
+        local_forward = dot(self.target_rot.col(0), car.rot)
+        local_up = dot(self.target_rot.col(2), car.rot)
+        local_ang_vel = dot(car.ang_vel, car.rot)
+
+        pitch_ang = math.atan2(-local_forward.z, local_forward.x)
+        pitch_ang_vel = local_ang_vel.y
+
+        yaw_ang = math.atan2(-local_forward.y, local_forward.x)
+        yaw_ang_vel = -local_ang_vel.z
+
+        roll_ang = math.atan2(-local_up.y, local_up.z)
+        roll_ang_vel = local_ang_vel.x
+        forwards_dot = dot(self.target_rot.col(0), car.forward)
+        roll_scale = forwards_dot ** 2 if forwards_dot > 0.85 else 0
+
+        controls.pitch = clip(-3.3 * pitch_ang + 0.8 * pitch_ang_vel, -1, 1)
+        controls.yaw = clip(-3.3 * yaw_ang + 0.9 * yaw_ang_vel, -1, 1)
+        controls.roll = clip(-3 * roll_ang + 0.5 * roll_ang_vel, -1, 1) * roll_scale
+        controls.throttle = 1
+
+        return controls

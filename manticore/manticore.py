@@ -18,6 +18,7 @@ from strategy.objective import Objective
 from strategy.offence import OffenceState
 from strategy.utility_system import UtilitySystem
 from util import rendering, predict
+from util.aerial_controller_test import AerialControllerTest
 from util.info import GameInfo
 from util.vec import Vec3
 
