@@ -177,4 +177,7 @@ class PDAerialTurnManeuver(Maneuver):
         controls.roll = clip(-3 * roll_ang + 0.5 * roll_ang_vel, -1, 1) * roll_scale
         controls.throttle = 1
 
+        ups_dot = dot(self.target_rot.col(2), car.up)
+        self.done = forwards_dot * ups_dot > 0.99 or car.on_ground
+
         return controls
