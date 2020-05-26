@@ -6,7 +6,17 @@ from util.rlmath import clip
 from util.vec import Vec3, Mat33, euler_to_rotation, angle_between, norm
 
 
-GRAVITY = Vec3(0, 0, -650)
+MAX_SPEED = 2300
+BOOST_ACCEL = 1060
+THROTTLE_AIR_ACCEL = 66
+BOOST_PR_SEC = 33
+GRAVITY = Vec3(z=-650)
+
+JUMP_SPEED = 291.667
+JUMP_FORCE = Vec3(z=JUMP_SPEED)
+JUMP_ACCEL = 1458.3333
+JUMP_MIN_DUR = 0.025
+JUMP_MAX_DUR = 0.2
 
 
 class Field:

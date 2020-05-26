@@ -3,7 +3,6 @@ import random
 from rlbot.agents.base_agent import SimpleControllerState
 from rlbot.utils.game_state_util import GameState, BallState, Physics, CarState
 
-from maneuvers.aerialturn import PDAerialTurnManeuver
 from util.info import Ball
 from util.vec import Vec3, normalize, Mat33, looking_in_dir
 
@@ -18,7 +17,6 @@ class AerialControllerTest:
     def __init__(self):
         self.next_test = 0
         self.ball_pos = Vec3(z=Ball.RADIUS)
-        self.aerial_controller = PDAerialTurnManeuver(Mat33.identity())
 
     def exec(self, bot) -> SimpleControllerState:
 
@@ -38,6 +36,5 @@ class AerialControllerTest:
         ))
 
         target_rot = looking_in_dir(self.ball_pos - CAR_POS)
-        self.aerial_controller.target_rot = target_rot
 
-        return self.aerial_controller.exec(bot)
+        return bot.fly.align(bot, target_rot)

@@ -42,7 +42,7 @@ class DriveController:
 
         # Begin recovery
         if not car.on_ground:
-            bot.maneuver = RecoveryManeuver(bot)
+            bot.maneuver = RecoveryManeuver()
             return self.controls
 
         # Get down from wall by choosing a point close to ground

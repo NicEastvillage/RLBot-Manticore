@@ -8,6 +8,7 @@ from behaviour.follow_up import PrepareFollowUp
 from behaviour.save_goal import SaveGoal
 from behaviour.shoot_at_goal import ShootAtGoal
 from controllers.drive import DriveController
+from controllers.fly import FlyController
 from controllers.other import celebrate
 from controllers.shots import ShotController
 from maneuvers.kickoff import choose_kickoff_maneuver
@@ -38,6 +39,7 @@ class Manticore(BaseAgent):
 
         self.drive = DriveController()
         self.shoot = ShotController()
+        self.fly = FlyController()
 
     def initialize_agent(self):
         self.info = GameInfo(self.index, self.team)

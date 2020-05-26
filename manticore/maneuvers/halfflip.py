@@ -45,7 +45,7 @@ class HalfFlipManeuver(Maneuver):
             if car.on_ground:
                 self.done = True
             else:
-                bot.maneuver = RecoveryManeuver(bot)
+                bot.maneuver = RecoveryManeuver()
                 self.done = True
         elif ct >= self._t_roll_begin:
             controls.pitch = -1

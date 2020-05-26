@@ -54,7 +54,7 @@ class SmallJumpManeuver(Maneuver):
             if car.on_ground:
                 self.done = True
             else:
-                bot.plan = RecoveryManeuver(bot)
+                bot.plan = RecoveryManeuver()
                 self.done = True
             return self.controls
         elif ct >= self._t_second_unjump:

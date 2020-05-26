@@ -58,7 +58,7 @@ class DodgeManeuver(Maneuver):
             if car.on_ground:
                 self.done = True
             else:
-                bot.maneuver = RecoveryManeuver(bot)
+                bot.maneuver = RecoveryManeuver()
                 self.done = True
             return controls
         elif ct >= self._t_second_unjump:
