@@ -89,8 +89,9 @@ class DriveController:
         if car.on_ground and bot.do_rendering:
             tr_center_world = car.pos + dot(car.rot, tr_center_local)
             tr_center_world_2 = car.pos + dot(car.rot, -1 * tr_center_local)
-            rendering.draw_circle(bot, tr_center_world, car.up, tr, 22)
-            rendering.draw_circle(bot, tr_center_world_2, car.up, tr, 22)
+            color = bot.renderer.orange()
+            rendering.draw_circle(bot, tr_center_world, car.up, tr, 22, color)
+            rendering.draw_circle(bot, tr_center_world_2, car.up, tr, 22, color)
 
         if point_is_in_turn_radius_deadzone:
             # Hard turn

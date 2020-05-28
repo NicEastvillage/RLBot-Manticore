@@ -3,6 +3,7 @@ import math
 from rlbot.agents.base_agent import SimpleControllerState
 
 from controllers.aim_cone import AimCone
+from maneuvers.jump_shot import JumpShotManeuver
 from maneuvers.small_jump import SmallJumpManeuver
 from util.curves import curve_from_arrival_dir
 from util.info import Field, Ball
@@ -58,27 +59,33 @@ class ShotController:
         car_to_ball_soon = ball_soon.pos - car.pos
         dot_facing_score = dot(normalize(car_to_ball_soon), normalize(car.forward))
         vel_towards_ball_soon = proj_onto_size(car.vel, car_to_ball_soon)
-        is_facing = 0 < dot_facing_score
+        is_facing = 0.1 < dot_facing_score
 
-        if ball_soon.pos.z < 110 or (ball_soon.pos.z < 475 and ball_soon.vel.z <= 0) or True: #FIXME Always true
+        self.ball_when_hit = ball_soon
+
+        potential_jump_shot = JumpShotManeuver(bot, ball_soon.pos, bot.info.time + time)
+        jump_shot_viable = potential_jump_shot.is_viable(car, bot.info.time)
+
+        if ball_soon.pos.z < 110 or (ball_soon.pos.z < 500 and ball_soon.vel.z <= 0) or not jump_shot_viable:
 
             # The ball is on the ground or soon on the ground
 
-            if 275 < ball_soon.pos.z < 475 and aim_cone.contains_direction(car_to_ball_soon):
+            if 275 < ball_soon.pos.z < 500 and aim_cone.contains_direction(car_to_ball_soon):
                 # Can we hit it if we make a small jump?
                 vel_f = proj_onto_size(car.vel, xy(car_to_ball_soon))
                 car_expected_pos = car.pos + car.vel * time
-                ball_soon_flat = xy(ball_soon.pos)
-                diff = norm(car_expected_pos - ball_soon_flat)
-                ball_in_front = dot(ball_soon.pos - car_expected_pos, car.vel) > 0
 
                 if bot.do_rendering:
                     bot.renderer.draw_line_3d(car.pos, car_expected_pos, bot.renderer.lime())
                     bot.renderer.draw_rect_3d(car_expected_pos, 12, 12, True, bot.renderer.lime())
 
                 if vel_f > 400:
-                    if diff < 150 and ball_in_front:
-                        bot.maneuver = SmallJumpManeuver(bot, lambda b: b.info.ball.pos)
+                    if jump_shot_viable:
+                        self.can_shoot = True
+                        self.aim_is_ok = True
+                        bot.maneuver = potential_jump_shot
+                        bot.print("JUMP SHOT - 1")
+                        return bot.maneuver.exec(bot)
 
             if 110 < ball_soon.pos.z:  # and ball_soon.vel.z <= 0:
                 # The ball is slightly in the air, lets wait just a bit more
@@ -139,15 +146,21 @@ class ShotController:
 
         else:
 
-            if aim_cone.contains_direction(car_to_ball_soon):
-                self.waits_for_fall = True
+            if aim_cone.contains_direction(car_to_ball_soon) and jump_shot_viable and 0.8 < dot_facing_score:
+                # Allow small aerial TODO (wait if ball is too high)
                 self.aim_is_ok = True
-                #self.can_shoot = False
-                pass  # Allow small aerial (wait if ball is too high)
+                self.can_shoot = True
+                self.ball_when_hit = ball_soon
+                bot.maneuver = potential_jump_shot
+                bot.print("JUMP SHOT - 2")
+                return bot.maneuver.exec(bot)
 
             elif aim_cone.contains_direction(car_to_ball_soon, math.pi / 4):
                 self.ball_is_flying = True
                 pass  # Aim is ok, but ball is in the air
+
+            self.ball_when_hit = ball_soon
+            return self.controls
 
     def towards(self, bot, target: Vec3, time: float, allowed_uncertainty: float = 0.3, dodge_hit: bool = True):
 

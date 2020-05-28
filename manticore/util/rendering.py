@@ -20,7 +20,7 @@ def draw_ball_path(bot, duration: float, step_size: int):
             bot.renderer.draw_polyline_3d(locations, bot.renderer.create_color(255, 255, 0, 0))
 
 
-def draw_circle(bot, center: Vec3, normal: Vec3, radius: float, pieces: int):
+def draw_circle(bot, center: Vec3, normal: Vec3, radius: float, pieces: int, color):
     # Construct the arm that will be rotated
     arm = normalize(cross(normal, center)) * radius
     angle = 2 * math.pi / pieces
@@ -31,7 +31,7 @@ def draw_circle(bot, center: Vec3, normal: Vec3, radius: float, pieces: int):
         arm = dot(rotation_mat, arm)
         points.append(center + arm)
 
-    bot.renderer.draw_polyline_3d(points, bot.renderer.orange())
+    bot.renderer.draw_polyline_3d(points, color)
 
 
 def draw_bezier(bot, points: List[Vec3], time_step: float=0.05):
