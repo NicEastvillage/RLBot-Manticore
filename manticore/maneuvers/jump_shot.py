@@ -19,7 +19,7 @@ class JumpShotManeuver(Maneuver):
         self.target_rot = target_rot
         self.jumping = bot.info.my_car.on_ground
         self.do_second_jump = do_second_jump
-        self.do_dodge = not do_second_jump  # TODO
+        self.do_dodge = not do_second_jump  # TODO make optional
         self.jump_begin_time = -1
         self.jump_pause_counter = 0
 
@@ -128,18 +128,18 @@ class JumpShotManeuver(Maneuver):
 
         return controls
 
-    def is_viable(self, car, time: float):
+    def is_viable(self, car, current_time: float):
         up = car.up
-        T = self.intercept_time - time
+        T = self.intercept_time - current_time
         xf = car.pos + car.vel * T + 0.5 * GRAVITY * T ** 2
         vf = car.vel + GRAVITY * T
 
         if self.jumping:
             if self.jump_begin_time == -1:
                 jump_elapsed = 0
-                self.jump_begin_time = time
+                self.jump_begin_time = current_time
             else:
-                jump_elapsed = time - self.jump_begin_time
+                jump_elapsed = current_time - self.jump_begin_time
 
             # How much longer we can press jump and still gain upward force
             tau = JUMP_MAX_DUR - jump_elapsed

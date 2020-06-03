@@ -40,7 +40,7 @@ class Carry(UtilityState):
 
         obj_bonus = {
             Objective.UNKNOWN: 0,
-            Objective.GO_FOR_IT: 0.2,
+            Objective.GO_FOR_IT: 0.17,
             Objective.FOLLOW_UP: 0,
             Objective.ROTATE_BACK_OR_DEF: 0,
         }[car.objective]

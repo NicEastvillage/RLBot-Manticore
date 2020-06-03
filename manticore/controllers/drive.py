@@ -21,9 +21,12 @@ class DriveController:
         self.dodge_cooldown = 0.27
         self.recovery = None
 
-    def start_dodge(self, bot):
+    def start_dodge(self, bot, towards_ball: bool = False):
         if self.dodge is None:
-            self.dodge = DodgeManeuver(bot, self.last_point)
+            if towards_ball:
+                self.dodge = DodgeManeuver(bot, lambda b: b.info.ball.pos)
+            else:
+                self.dodge = DodgeManeuver(bot, self.last_point)
 
     def towards_point(self, bot, point: Vec3, target_vel=1430, slide=False, boost_min=101, can_keep_speed=True, can_dodge=True, wall_offset_allowed=125) -> SimpleControllerState:
         REQUIRED_ANG_FOR_SLIDE = 1.65
