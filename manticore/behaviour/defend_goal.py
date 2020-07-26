@@ -22,14 +22,14 @@ class DefendGoal(UtilityState):
                 sum_pos += mate.pos + mate.vel * 0.5
             avg_pos = sum_pos / len(mates)
             team_committed01 = clip01(norm(avg_pos - bot.info.own_goal.pos) / Field.LENGTH2)
-            no_defence01 = clip01(argmin(mates, lambda mate: norm(mate.pos - bot.info.own_goal.pos))[1] / 800)
+            no_defence01 = clip01(argmin(mates, lambda mate: norm(mate.pos - bot.info.own_goal.pos))[1] / 1000)
 
         dist_to_ball01 = clip01(norm(car.pos - bot.info.ball.pos) / Field.LENGTH2)
 
         obj_bonus = {
             Objective.UNKNOWN: 0,
             Objective.GO_FOR_IT: 0,
-            Objective.FOLLOW_UP: 0.1,
+            Objective.FOLLOW_UP: 0.0,
             Objective.ROTATE_BACK_OR_DEF: 0.3,
         }[car.objective]
 

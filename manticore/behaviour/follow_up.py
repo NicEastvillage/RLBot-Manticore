@@ -13,8 +13,8 @@ class PrepareFollowUp(UtilityState):
         car = bot.info.my_car
         ball = bot.info.ball
 
-        half_way = lerp(bot.info.own_goal.pos, ball.pos, 0.5)
-        _, missing_center_guy01 = argmin(bot.info.team_cars, lambda mate: 1.0 - clip01(norm(mate.pos - half_way) / Field.LENGTH2))
+        follow_up_pos = bot.analyzer.ideal_follow_up_pos
+        _, missing_follow_up_guy01 = argmin(bot.info.team_cars, lambda mate: 1.0 - clip01(norm(mate.pos - follow_up_pos) / Field.LENGTH2))
         attack_in_front = any(is_closer_to_goal_than(car.pos, mate.pos, car.team) for mate in bot.info.teammates if mate.objective == Objective.GO_FOR_IT)
         ball_in_front = is_closer_to_goal_than(car.pos, ball.pos, car.team)
 
@@ -25,19 +25,20 @@ class PrepareFollowUp(UtilityState):
             Objective.ROTATE_BACK_OR_DEF: 0,
         }[car.objective]
 
-        return attack_in_front * ball_in_front * missing_center_guy01 + obj_bonus
+        return attack_in_front * ball_in_front * missing_follow_up_guy01 + obj_bonus
 
     def run(self, bot) -> SimpleControllerState:
 
         car = bot.info.my_car
         ball = bot.info.ball
-        half_way = lerp(bot.info.own_goal.pos, ball.pos, 0.5)
         dist_ball = norm(car.pos - ball.pos)
+        target_pos = bot.analyzer.ideal_follow_up_pos
+        dist_target = norm(car.pos - target_pos)
 
         return bot.drive.towards_point(
             bot,
-            half_way,
-            target_vel=dist_ball * 0.3,
-            slide=dist_ball > 1500,
+            bot.analyzer.ideal_follow_up_pos,
+            target_vel=dist_target * 0.8,
+            slide=dist_target > 1000,s
             can_dodge=False
         )

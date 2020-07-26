@@ -1,6 +1,7 @@
 from strategy.objective import Objective
-from util import predict
+from util import predict, rendering
 from util.rlmath import argmin, argmax, clip01
+from util.vec import Vec3, xy
 from util.vec import norm, normalize, dot
 
 
@@ -12,6 +13,7 @@ class GameAnalyzer:
         self.ally_with_possession = None
         self.opp_with_possession = None
         self.first_to_reach_ball = None
+        self.ideal_follow_up_pos = Vec3()
 
     def update(self, bot):
         ball = bot.info.ball
@@ -41,7 +43,7 @@ class GameAnalyzer:
             dist01 = 1500 / (1500 + ball_point_dist)  # Halves every 1500 uu of dist
             car_to_ball = bot.info.ball.pos - car.pos
             car_to_ball_unit = normalize(car_to_ball)
-            in_front01 = dot(car.forward, car_to_ball_unit)
+            in_front01 = dot(car.forward, car_to_ball_unit) if car.on_ground else 0.5
             car.possession = dist01 * in_front01 * reach01 * 3
             if self.car_with_possession is None or car.possession > self.car_with_possession.possession:
                 self.car_with_possession = car
@@ -62,13 +64,20 @@ class GameAnalyzer:
                                                         - (0.4 if not ally.onsite else 0)
                                                         + ally.possession * (10_000 - ally.team_sign * ally.pos.y) / 20_000)**2)
         attacker.objective = Objective.GO_FOR_IT
-        follower_expected_pos = (ball.pos + bot.info.own_goal.pos) * 0.5
+        self.ideal_follow_up_pos = xy(ball.pos + bot.info.own_goal.pos) * 0.5 + Vec3(x=-min(ball.pos.x, 3000))
+        if bot.do_rendering:
+            if bot.index == 0:
+                bot.print(str(self.ideal_follow_up_pos))
+            bot.renderer.begin_rendering()
+            rendering.draw_cross(bot, self.ideal_follow_up_pos, bot.renderer.team_color(), 80)
+            rendering.draw_circle(bot, self.ideal_follow_up_pos, Vec3(z=1), 85, 20, bot.renderer.team_color())
+            bot.renderer.draw_line_3d(bot.info.my_car.pos, self.ideal_follow_up_pos, bot.renderer.team_color())
         follower, follower_score = argmin([ally for ally in bot.info.team_cars if ally.objective == Objective.UNKNOWN],
                                           lambda ally: (-500 if ally.last_objective == Objective.FOLLOW_UP else 0)
                                                         - ally.boost * 2
                                                         + (1100 if ally.index == thirdman_index else 0)
-                                                        + (200 if not ally.onsite else 0)
-                                                        + norm(ally.pos - follower_expected_pos))
+                                                        + (400 if not ally.onsite else 0)
+                                                        + norm(ally.pos - self.ideal_follow_up_pos))
         if follower is not None:
             follower.objective = Objective.FOLLOW_UP
         for car in bot.info.team_cars:
