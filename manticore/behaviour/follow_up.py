@@ -39,6 +39,6 @@ class PrepareFollowUp(UtilityState):
             bot,
             bot.analyzer.ideal_follow_up_pos,
             target_vel=dist_target * 0.8,
-            slide=dist_target > 1000,s
+            slide=dist_target > 1000,
             can_dodge=False
         )
