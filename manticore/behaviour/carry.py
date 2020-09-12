@@ -39,18 +39,18 @@ class Carry(UtilityState):
         ang_01 = clip01(1 - ang / (math.pi / 2))
 
         obj_bonus = {
-            Objective.UNKNOWN: 0,
-            Objective.GO_FOR_IT: 0.17,
+            Objective.UNKNOWN: 0.8,
+            Objective.GO_FOR_IT: 1.0,
             Objective.FOLLOW_UP: 0,
-            Objective.ROTATE_BACK_OR_DEF: 0,
+            Objective.ROTATING: 0,
+            Objective.SOLO: 1.0,
         }[car.objective]
 
-        return clip01(0.6 * ang_01
-                              + 0.4 * dist_01
-                              #  - 0.3 * bot.analyzer.team_mate_has_ball_01
-                              + self.is_dribbling * self.extra_utility_bias
-                              + obj_bonus
-                      )
+        return obj_bonus * clip01(
+            (0.6 * ang_01 + 0.4 * dist_01)
+            #  * (1 - bot.analyzer.team_mate_has_ball_01)
+            + self.is_dribbling * self.extra_utility_bias
+        )
 
     def run(self, bot) -> SimpleControllerState:
         self.is_dribbling = True

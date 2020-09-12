@@ -27,13 +27,14 @@ class SaveGoal(UtilityState):
         hits_goal = hits_goal_prediction.happens and sign(ball.vel.y) == team_sign and hits_goal_prediction.time < 3
 
         obj_bonus = {
-            Objective.UNKNOWN: 0,
-            Objective.GO_FOR_IT: 0.2,
-            Objective.FOLLOW_UP: -0.2,
-            Objective.ROTATE_BACK_OR_DEF: 0,
+            Objective.UNKNOWN: 1,
+            Objective.GO_FOR_IT: 1,
+            Objective.FOLLOW_UP: 0,
+            Objective.ROTATING: 0,
+            Objective.SOLO: 1,
         }[bot.info.my_car.objective]
 
-        return float(hits_goal or too_close) + obj_bonus
+        return float(hits_goal or too_close) * obj_bonus
 
     def run(self, bot) -> SimpleControllerState:
 

@@ -19,13 +19,14 @@ class PrepareFollowUp(UtilityState):
         ball_in_front = is_closer_to_goal_than(car.pos, ball.pos, car.team)
 
         obj_bonus = {
-            Objective.UNKNOWN: 0,
+            Objective.UNKNOWN: 0.5,
             Objective.GO_FOR_IT: 0,
-            Objective.FOLLOW_UP: 0.23,
-            Objective.ROTATE_BACK_OR_DEF: 0,
+            Objective.FOLLOW_UP: 1,
+            Objective.ROTATING: 0,
+            Objective.SOLO: 0.9,
         }[car.objective]
 
-        return attack_in_front * ball_in_front * missing_follow_up_guy01 + obj_bonus
+        return attack_in_front * ball_in_front * missing_follow_up_guy01 * bot.info.my_car.onsite * obj_bonus
 
     def run(self, bot) -> SimpleControllerState:
 

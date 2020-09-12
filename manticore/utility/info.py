@@ -61,6 +61,7 @@ class Car:
         self.last_input = SimpleControllerState()
 
         # Analytic info
+        self.effective_pos = pos  # A point a bit in front of them
         self.objective = Objective.UNKNOWN
         self.possession = 0
         self.onsite = False

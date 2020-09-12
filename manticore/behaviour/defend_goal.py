@@ -27,13 +27,14 @@ class DefendGoal(UtilityState):
         dist_to_ball01 = clip01(norm(car.pos - bot.info.ball.pos) / Field.LENGTH2)
 
         obj_bonus = {
-            Objective.UNKNOWN: 0,
+            Objective.UNKNOWN: 1.0,
             Objective.GO_FOR_IT: 0,
-            Objective.FOLLOW_UP: 0.0,
-            Objective.ROTATE_BACK_OR_DEF: 0.3,
+            Objective.FOLLOW_UP: 0,
+            Objective.ROTATING: 1.0,
+            Objective.SOLO: 1.0,
         }[car.objective]
 
-        return 0.9 * team_committed01 * dist_to_ball01 * no_defence01 + obj_bonus
+        return 0.85 * team_committed01 * dist_to_ball01 * no_defence01 * obj_bonus
 
     def run(self, bot) -> SimpleControllerState:
         return bot.drive.home(bot)

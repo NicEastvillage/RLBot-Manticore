@@ -30,13 +30,14 @@ class ClearBall(UtilityState):
         in_position = self.aim_cone.contains_direction(car_to_ball, math.pi / 8)
 
         obj_bonus = {
-            Objective.UNKNOWN: 0,
-            Objective.GO_FOR_IT: 0.2,
-            Objective.FOLLOW_UP: -0.2,
-            Objective.ROTATE_BACK_OR_DEF: -0.2,
+            Objective.UNKNOWN: 1,
+            Objective.GO_FOR_IT: 1,
+            Objective.FOLLOW_UP: 0,
+            Objective.ROTATING: 0,
+            Objective.SOLO: 1.0,
         }[bot.info.my_car.objective]
 
-        return ball_own_half_01 * in_position + obj_bonus
+        return ball_own_half_01 * in_position * obj_bonus
 
     def run(self, bot) -> SimpleControllerState:
         car = bot.info.my_car

@@ -42,13 +42,14 @@ class ShootAtGoal(UtilityState):
         kickoff_bias01 = max(0, 1 - bot.info.time_since_last_kickoff * 0.3) * float(bot.info.my_car.objective == Objective.UNKNOWN)
 
         obj_bonus = {
-            Objective.UNKNOWN: 0,
-            Objective.GO_FOR_IT: 0.2,
+            Objective.UNKNOWN: 1,
+            Objective.GO_FOR_IT: 1,
             Objective.FOLLOW_UP: 0,
-            Objective.ROTATE_BACK_OR_DEF: -0.2,
+            Objective.ROTATING: 0,
+            Objective.SOLO: 1,
         }[bot.info.my_car.objective]
 
-        return clip01(close_to_ball01 * own_half_01 + 0.1 * in_position + self.temp_utility_desire_boost + kickoff_bias01) + obj_bonus
+        return clip01(close_to_ball01 * own_half_01 + 0.1 * in_position + self.temp_utility_desire_boost + kickoff_bias01) * obj_bonus
 
     def run(self, bot) -> SimpleControllerState:
 

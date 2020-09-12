@@ -13,13 +13,8 @@ from controllers.other import celebrate
 from controllers.shots import ShotController
 from maneuvers.kickoff import choose_kickoff_maneuver
 from strategy.analyzer import GameAnalyzer
-from strategy.defence import RotateOrDefendState
-from strategy.followup import FollowUpState
 from strategy.objective import Objective
-from strategy.offence import OffenceState
 from strategy.utility_system import UtilitySystem
-from utility import rendering, predict
-from utility.aerial_controller_test import AerialControllerTest
 from utility.info import GameInfo
 from utility.vec import Vec3
 
@@ -58,14 +53,15 @@ class Manticore(BaseAgent):
             self.info.read_field_info(self.get_field_info())
             if not self.info.field_info_loaded:
                 return SimpleControllerState()
+
+        self.renderer.begin_rendering()
+
         self.info.read_packet(packet)
         self.analyzer.update(self)
 
         # Check if match is over
         if packet.game_info.is_match_ended:
             return celebrate(self)  # Assume we won!
-
-        self.renderer.begin_rendering()
 
         controller = self.use_brain()
 
@@ -75,7 +71,7 @@ class Manticore(BaseAgent):
             state_color = {
                 Objective.GO_FOR_IT: self.renderer.lime(),
                 Objective.FOLLOW_UP: self.renderer.yellow(),
-                Objective.ROTATE_BACK_OR_DEF: self.renderer.red(),
+                Objective.ROTATING: self.renderer.red(),
                 Objective.UNKNOWN: self.renderer.team_color(alt_color=True)
             }[self.info.my_car.objective]
             if doing is not None:
