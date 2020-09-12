@@ -5,9 +5,9 @@ from rlbot.agents.base_agent import SimpleControllerState
 from controllers.aim_cone import AimCone
 from strategy.objective import Objective
 from strategy.utility_system import UtilityState
-from util import predict, rendering
-from util.info import Field
-from util.rlmath import clip01, remap, lerp
+from utility import predict, rendering
+from utility.info import Field
+from utility.rlmath import clip01, remap, lerp
 
 
 class ClearBall(UtilityState):

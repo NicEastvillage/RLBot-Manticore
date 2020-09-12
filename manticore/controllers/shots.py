@@ -5,11 +5,11 @@ from rlbot.agents.base_agent import SimpleControllerState
 from controllers.aim_cone import AimCone
 from maneuvers.jump_shot import JumpShotManeuver
 from maneuvers.small_jump import SmallJumpManeuver
-from util.curves import curve_from_arrival_dir
-from util.info import Field, Ball
-from util.predict import ball_predict, next_ball_landing
-from util.rlmath import clip
-from util.vec import angle_between, xy, dot, norm, proj_onto_size, normalize, Vec3, axis_to_rotation
+from utility.curves import curve_from_arrival_dir
+from utility.info import Field, Ball
+from utility.predict import ball_predict, next_ball_landing
+from utility.rlmath import clip
+from utility.vec import angle_between, xy, dot, norm, proj_onto_size, normalize, Vec3, axis_to_rotation
 
 
 class ShotController:
@@ -60,7 +60,7 @@ class ShotController:
         dot_facing_score_2d = dot(normalize(xy(car_to_ball_soon)), normalize(xy(car.forward)))
         vel_towards_ball_soon = proj_onto_size(car.vel, car_to_ball_soon)
         is_facing = 0.1 < dot_facing_score
-        is_facing_2d = 0.4 < dot_facing_score
+        is_facing_2d = 0.3 < dot_facing_score
 
         self.ball_when_hit = ball_soon
 
@@ -131,22 +131,22 @@ class ShotController:
         # ---------------------------------------
         # Ball is in the air, or going in the air
 
-        if 200 < ball_soon.pos.z < 1200 and aim_cone.contains_direction(car_to_ball_soon) and is_facing_2d:
+        if 200 < ball_soon.pos.z < 1400 and aim_cone.contains_direction(car_to_ball_soon) and is_facing_2d:
 
             # Can we hit it if we make jump shot or aerial shot?
 
             vel_f = proj_onto_size(car.vel, xy(car_to_ball_soon))
-            aerial = ball_soon.pos.z > 600
+            aerial = ball_soon.pos.z > 750
 
             if vel_f > 400:  # Some forward momentum is required
 
                 flat_dist = norm(xy(car_to_ball_soon))
                 # This range should be good https://www.desmos.com/calculator/bx9imtiqi5
-                good_height = 0.4 * ball_soon.pos.z < flat_dist < 4 * ball_soon.pos.z
+                good_height = 0.3 * ball_soon.pos.z < flat_dist < 4 * ball_soon.pos.z
 
                 if good_height:
 
-                    # Alternatives ball positions
+                    # Alternative ball positions
                     alternatives = [
                         (ball_predict(bot, time * 0.8), time * 0.8),
                         (ball_predict(bot, time * 0.9), time * 0.9),
@@ -164,7 +164,7 @@ class ShotController:
                             self.can_shoot = True
                             self.aim_is_ok = True
                             bot.maneuver = potential_small_jump_shot
-                            bot.print("AERIAL" if aerial else "JUMP SHOT")
+                            #bot.print("AERIAL" if aerial else "JUMP SHOT")
                             return bot.maneuver.exec(bot)
 
         self.ball_is_flying = True

@@ -18,10 +18,10 @@ from strategy.followup import FollowUpState
 from strategy.objective import Objective
 from strategy.offence import OffenceState
 from strategy.utility_system import UtilitySystem
-from util import rendering, predict
-from util.aerial_controller_test import AerialControllerTest
-from util.info import GameInfo
-from util.vec import Vec3
+from utility import rendering, predict
+from utility.aerial_controller_test import AerialControllerTest
+from utility.info import GameInfo
+from utility.vec import Vec3
 
 RENDER = True
 

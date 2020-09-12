@@ -2,8 +2,8 @@ import math
 
 from rlbot.agents.base_agent import SimpleControllerState
 
-from util.rlmath import clip
-from util.vec import Mat33, dot
+from utility.rlmath import clip
+from utility.vec import Mat33, dot
 
 
 class FlyController:

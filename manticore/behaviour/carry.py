@@ -5,9 +5,9 @@ from rlbot.agents.base_agent import SimpleControllerState
 from maneuvers.dodge import DodgeManeuver
 from strategy.objective import Objective
 from strategy.utility_system import UtilityState
-from util import predict
-from util.rlmath import clip01, lerp
-from util.vec import norm, Vec3, angle_between, normalize, dot
+from utility import predict
+from utility.rlmath import clip01, lerp
+from utility.vec import norm, Vec3, angle_between, normalize, dot
 
 
 class Carry(UtilityState):

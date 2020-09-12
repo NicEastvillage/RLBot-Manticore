@@ -5,8 +5,8 @@ from rlbot.agents.base_agent import SimpleControllerState
 from maneuvers.maneuver import Maneuver
 
 
-from util.rlmath import sign0, clip
-from util.vec import transpose, dot, rotation_to_axis, Vec3, norm, Mat33
+from utility.rlmath import sign0, clip
+from utility.vec import transpose, dot, rotation_to_axis, Vec3, norm, Mat33
 
 
 # Credits to chip

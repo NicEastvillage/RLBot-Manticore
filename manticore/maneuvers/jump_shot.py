@@ -3,11 +3,11 @@ import math
 from rlbot.agents.base_agent import SimpleControllerState
 
 from maneuvers.maneuver import Maneuver
-from util import predict, rendering
-from util.info import GRAVITY, JUMP_MAX_DUR, THROTTLE_AIR_ACCEL, JUMP_ACCEL, JUMP_SPEED, BOOST_ACCEL, \
-    BOOST_PR_SEC, MAX_SPEED
-from util.rlmath import clip01, clip, lerp
-from util.vec import Vec3, norm, looking_in_dir, dot, angle_between, normalize, Mat33
+from utility import predict, rendering
+from utility.info import GRAVITY, JUMP_MAX_DUR, THROTTLE_AIR_ACCEL, JUMP_ACCEL, JUMP_SPEED, BOOST_ACCEL, \
+    BOOST_PR_SEC, MAX_SPEED, Ball
+from utility.rlmath import clip01, clip, lerp, sign
+from utility.vec import Vec3, norm, looking_in_dir, dot, angle_between, normalize, Mat33
 
 
 class JumpShotManeuver(Maneuver):
@@ -22,6 +22,7 @@ class JumpShotManeuver(Maneuver):
         self.do_dodge = not do_second_jump  # TODO make optional
         self.jump_begin_time = -1
         self.jump_pause_counter = 0
+        self.dodge_begin_time = -1
 
     def exec(self, bot):
 
@@ -87,23 +88,45 @@ class JumpShotManeuver(Maneuver):
 
         delta_pos = self.hit_pos - xf
         direction = normalize(delta_pos)
+        car_to_hit_pos = self.hit_pos - car.pos
 
-        # We are not pressing jump, so let's orient the car
-        if rotate:
-            if norm(delta_pos) > 50:
-                # local_delta_x = dot(delta_pos - car.pos, car.rot)  # FIXME Not sure if this needs to be local?
-                pd = bot.fly.align(bot, looking_in_dir(delta_pos))
+        dodging = self.dodge_begin_time != -1
+        if dodging:
+            controls.jump = True
+
+        # We are not pressing jump, so let's align the car
+        if rotate and not dodging:
+
+            if self.do_dodge and norm(car_to_hit_pos) < Ball.RADIUS + 70:
+                # Start dodge
+
+                self.dodge_begin_time = ct
+
+                hit_local = dot(car_to_hit_pos, car.rot)
+                hit_local.z = 0
+
+                dodge_direction = normalize(hit_local)
+
+                controls.roll = 0
+                controls.pitch = -dodge_direction.x
+                controls.yaw = sign(car.rot.get(2, 2)) * direction.y
+                controls.jump = True
+
             else:
-                if self.target_rot is not None:
-                    pd = bot.fly.align(bot, self.target_rot)
+                # Adjust orientation
+                if norm(delta_pos) > 50:
+                    pd = bot.fly.align(bot, looking_in_dir(delta_pos))
                 else:
-                    pd = bot.fly.align(bot, looking_in_dir(self.hit_pos - car.pos))
+                    if self.target_rot is not None:
+                        pd = bot.fly.align(bot, self.target_rot)
+                    else:
+                        pd = bot.fly.align(bot, looking_in_dir(self.hit_pos - car.pos))
 
-            controls.roll = pd.roll
-            controls.pitch = pd.pitch
-            controls.yaw = pd.yaw
+                controls.roll = pd.roll
+                controls.pitch = pd.pitch
+                controls.yaw = pd.yaw
 
-        if angle_between(car.forward, direction) < 0.3:
+        if not dodging and angle_between(car.forward, direction) < 0.3:
             if norm(delta_pos) > 50:
                 controls.boost = 1
                 controls.throttle = 0

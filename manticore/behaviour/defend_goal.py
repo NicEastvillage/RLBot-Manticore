@@ -2,9 +2,9 @@ from rlbot.agents.base_agent import SimpleControllerState
 
 from strategy.objective import Objective
 from strategy.utility_system import UtilityState
-from util.info import Field
-from util.rlmath import clip01, argmin
-from util.vec import norm
+from utility.info import Field
+from utility.rlmath import clip01, argmin
+from utility.vec import norm
 
 
 class DefendGoal(UtilityState):

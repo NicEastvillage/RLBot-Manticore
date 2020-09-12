@@ -6,10 +6,10 @@ from controllers.other import turn_radius, is_heading_towards
 from maneuvers.dodge import DodgeManeuver
 from maneuvers.halfflip import HalfFlipManeuver
 from maneuvers.recovery import RecoveryManeuver
-from util import rendering
-from util.info import Field, is_near_wall, Goal
-from util.rlmath import lerp, sign, clip
-from util.vec import Vec3, angle_between, xy, dot, norm, proj_onto_size, normalize
+from utility import rendering
+from utility.info import Field, is_near_wall, Goal
+from utility.rlmath import lerp, sign, clip
+from utility.vec import Vec3, angle_between, xy, dot, norm, proj_onto_size, normalize
 
 
 class DriveController:

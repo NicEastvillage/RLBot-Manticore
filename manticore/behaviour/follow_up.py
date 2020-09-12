@@ -2,9 +2,9 @@ from rlbot.agents.base_agent import SimpleControllerState
 
 from strategy.objective import Objective
 from strategy.utility_system import UtilityState
-from util.info import Field
-from util.rlmath import clip01, is_closer_to_goal_than, lerp, argmin
-from util.vec import normalize, norm
+from utility.info import Field
+from utility.rlmath import clip01, is_closer_to_goal_than, lerp, argmin
+from utility.vec import normalize, norm
 
 
 class PrepareFollowUp(UtilityState):

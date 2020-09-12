@@ -3,10 +3,10 @@ from rlbot.agents.base_agent import SimpleControllerState
 from controllers.aim_cone import AimCone
 from strategy.objective import Objective
 from strategy.utility_system import UtilityState
-from util import predict
-from util.info import Ball, Goal
-from util.rlmath import sign, clip
-from util.vec import Vec3, norm
+from utility import predict
+from utility.info import Ball, Goal
+from utility.rlmath import sign, clip
+from utility.vec import Vec3, norm
 
 
 class SaveGoal(UtilityState):

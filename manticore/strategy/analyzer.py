@@ -1,8 +1,8 @@
 from strategy.objective import Objective
-from util import predict, rendering
-from util.rlmath import argmin, argmax, clip01
-from util.vec import Vec3, xy
-from util.vec import norm, normalize, dot
+from utility import predict, rendering
+from utility.rlmath import argmin, argmax, clip01
+from utility.vec import Vec3, xy
+from utility.vec import norm, normalize, dot
 
 
 class GameAnalyzer:
@@ -66,8 +66,6 @@ class GameAnalyzer:
         attacker.objective = Objective.GO_FOR_IT
         self.ideal_follow_up_pos = xy(ball.pos + bot.info.own_goal.pos) * 0.5 + Vec3(x=-min(ball.pos.x, 3000))
         if bot.do_rendering:
-            if bot.index == 0:
-                bot.print(str(self.ideal_follow_up_pos))
             bot.renderer.begin_rendering()
             rendering.draw_cross(bot, self.ideal_follow_up_pos, bot.renderer.team_color(), 80)
             rendering.draw_circle(bot, self.ideal_follow_up_pos, Vec3(z=1), 85, 20, bot.renderer.team_color())

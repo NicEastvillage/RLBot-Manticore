@@ -3,8 +3,8 @@ import random
 from rlbot.agents.base_agent import SimpleControllerState
 from rlbot.utils.game_state_util import GameState, BallState, Physics, CarState
 
-from util.info import Ball
-from util.vec import Vec3, normalize, Mat33, looking_in_dir
+from utility.info import Ball
+from utility.vec import Vec3, normalize, Mat33, looking_in_dir
 
 CAR_POS = Vec3(z=1350)
 BALL_OFFSET = 200

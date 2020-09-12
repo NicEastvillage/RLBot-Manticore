@@ -1,8 +1,8 @@
 from rlbot.agents.base_agent import SimpleControllerState
 
 from maneuvers.maneuver import Maneuver
-from util.info import Car
-from util.vec import normalize, xy, Vec3, cross, Mat33, norm
+from utility.info import Car
+from utility.vec import normalize, xy, Vec3, cross, Mat33, norm
 
 
 class RecoveryManeuver(Maneuver):

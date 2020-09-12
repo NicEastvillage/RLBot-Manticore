@@ -2,7 +2,7 @@ import math
 
 from rlbot.utils.game_state_util import Vector3
 
-from util.rlmath import clip
+from utility.rlmath import clip
 
 
 class Vec3:
