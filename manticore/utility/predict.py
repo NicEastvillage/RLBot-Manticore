@@ -127,7 +127,7 @@ def time_till_reach_ball(car, ball):
     time_normal = dist / max(220, vel_f)
     time_long = dist / max(norm(car.vel), 1410)
     time = lerp(time_normal, time_long, dist_long_01)
-    arrive_time = time * 0.95
+    arrive_time = time * 0.85
     # Combine slightly with old prediction to negative rapid changes
     result = lerp(arrive_time, car.last_expected_time_till_reach_ball, 0.22)
     car.last_expected_time_till_reach_ball = arrive_time

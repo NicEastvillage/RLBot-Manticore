@@ -38,13 +38,13 @@ class GameAnalyzer:
 
             # Reach ball time
             car.reach_ball_time = predict.time_till_reach_ball(car, ball)
-            reach01 = 1 - lin_fall(car.reach_ball_time, 6) ** 0.6
+            reach01 = 1 - 0.9 * lin_fall(car.reach_ball_time, 4) ** 0.5
 
             # Possession
             point_in_front = car.pos + car.vel * 0.5
             ball_point_dist = norm(ball.pos - point_in_front)
-            dist01 = 1500 / (1500 + ball_point_dist)  # Halved after 1500 uu of dist, 1/3 at 3000
-            in_front01 = clip01(dot(car.forward, car_to_ball_unit))
+            dist01 = 1000 / (1000 + ball_point_dist)  # Halved after 1000 uu of dist, 1/3 at 2000
+            in_front01 = (dot(car.forward, car_to_ball_unit) + 1) / 2.0
             car.possession = dist01 * in_front01 * reach01
             if self.car_with_possession is None or car.possession > self.car_with_possession.possession:
                 self.car_with_possession = car
@@ -64,10 +64,10 @@ class GameAnalyzer:
             car.objective = Objective.UNKNOWN
 
         attacker, attacker_score = argmax(bot.info.team_cars,
-                                          lambda ally: ((1.0 if ally.last_objective == Objective.GO_FOR_IT else 0.95)
+                                          lambda ally: ((1.0 if ally.last_objective == Objective.GO_FOR_IT else 0.9)
                                                         * ease_out(0.2 + 0.8 * ally.boost / 100, 2)  # 50 boost is 0.85, 0 boost is 0.2
-                                                        * (1 + ally.onsite / 2) ** 0.4
                                                         * ally.possession
+                                                        * (1.0 if ally.onsite else 0.5)
                                                         * (0 if ally.is_demolished else 1)))
 
         attacker.objective = Objective.GO_FOR_IT

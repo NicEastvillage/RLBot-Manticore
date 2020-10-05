@@ -1,6 +1,7 @@
 import math
 
 from rlbot.agents.base_agent import SimpleControllerState
+from rlbot.utils.structures.quick_chats import QuickChats
 
 from maneuvers.maneuver import Maneuver
 from utility import predict, rendering
@@ -160,7 +161,6 @@ class JumpShotManeuver(Maneuver):
         if self.jumping:
             if self.jump_begin_time == -1:
                 jump_elapsed = 0
-                self.jump_begin_time = current_time
             else:
                 jump_elapsed = current_time - self.jump_begin_time
 
@@ -173,8 +173,8 @@ class JumpShotManeuver(Maneuver):
                 xf += up * JUMP_SPEED * T
 
             # Acceleration from holding jump
-            vf += up * JUMP_SPEED * tau
-            xf += up * JUMP_SPEED * tau * (T - 0.5 * tau)
+            vf += up * JUMP_ACCEL * tau
+            xf += up * JUMP_ACCEL * tau * (T - 0.5 * tau)
 
             if self.do_second_jump:
                 # Impulse from the second jump
@@ -194,4 +194,5 @@ class JumpShotManeuver(Maneuver):
         boost_estimate = (tau2 - tau1) * BOOST_PR_SEC
         enough_boost = boost_estimate < 0.95 * car.boost
         enough_time = abs(ratio) < 0.9
+        QuickChats
         return norm(velocity_estimate) < 0.9 * MAX_SPEED and enough_boost and enough_time

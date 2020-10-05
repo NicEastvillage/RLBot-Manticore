@@ -49,7 +49,7 @@ class ShootAtGoal(UtilityState):
             Objective.SOLO: 1,
         }[bot.info.my_car.objective]
 
-        return clip01(close_to_ball01 * own_half_01 + 0.1 * in_position + self.temp_utility_desire_boost + kickoff_bias01) * obj_bonus
+        return clip01(close_to_ball01 * own_half_01 + 0.2 * in_position + self.temp_utility_desire_boost + kickoff_bias01) * obj_bonus
 
     def run(self, bot) -> SimpleControllerState:
 

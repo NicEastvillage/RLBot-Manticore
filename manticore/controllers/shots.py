@@ -86,7 +86,7 @@ class ShotController:
                 self.aim_is_ok = True
                 self.can_shoot = True
 
-                if norm(car_to_ball_soon) < 260 + Ball.RADIUS and aim_cone.contains_direction(car_to_ball_soon)\
+                if norm(car_to_ball_soon) < 400 + Ball.RADIUS and aim_cone.contains_direction(car_to_ball_soon)\
                         and vel_towards_ball_soon > 300:
                     bot.drive.start_dodge(bot, towards_ball=True)
 
@@ -110,7 +110,7 @@ class ShotController:
                 self.curve_point.x = clip(self.curve_point.x, -Field.WIDTH / 2, Field.WIDTH / 2)
                 self.curve_point.y = clip(self.curve_point.y, -Field.LENGTH / 2, Field.LENGTH / 2)
 
-                if dodge_hit and norm(car_to_ball_soon) < 240 + Ball.RADIUS and angle_between(car.forward, car_to_ball_soon) < 0.5\
+                if dodge_hit and norm(car_to_ball_soon) < 400 + Ball.RADIUS and angle_between(car.forward, car_to_ball_soon) < 0.5\
                         and aim_cone.contains_direction(car_to_ball_soon) and vel_towards_ball_soon > 300:
                     bot.drive.start_dodge(bot, towards_ball=True)
 
@@ -164,7 +164,6 @@ class ShotController:
                             self.can_shoot = True
                             self.aim_is_ok = True
                             bot.maneuver = potential_small_jump_shot
-                            #bot.print("AERIAL" if aerial else "JUMP SHOT")
                             return bot.maneuver.exec(bot)
 
         self.ball_is_flying = True

@@ -6,8 +6,9 @@ from maneuvers.dodge import DodgeManeuver
 from strategy.objective import Objective
 from strategy.utility_system import UtilityState
 from utility import predict
+from utility.easing import lin_fall
 from utility.rlmath import clip01, lerp
-from utility.vec import norm, Vec3, angle_between, normalize, dot
+from utility.vec import norm, Vec3, angle_between, normalize, dot, xy
 
 
 class Carry(UtilityState):
@@ -34,9 +35,10 @@ class Carry(UtilityState):
 
         dist_01 = clip01(1 - norm(car_to_ball) / 3000)
 
-        head_dir = lerp(Vec3(0, 0, 1), car.forward, 0.1)
+        head_dir = lerp(Vec3(0, 0, 1), car.forward, 0.13)
         ang = angle_between(head_dir, car_to_ball)
         ang_01 = clip01(1 - ang / (math.pi / 2))
+        xy_speed_delta_01 = lin_fall(norm(xy(car.vel - ball.vel)), 800)
 
         obj_bonus = {
             Objective.UNKNOWN: 0.8,
@@ -47,8 +49,7 @@ class Carry(UtilityState):
         }[car.objective]
 
         return obj_bonus * clip01(
-            (0.6 * ang_01 + 0.4 * dist_01)
-            #  * (1 - bot.analyzer.team_mate_has_ball_01)
+            xy_speed_delta_01 * ang_01 * dist_01
             + self.is_dribbling * self.extra_utility_bias
         )
 

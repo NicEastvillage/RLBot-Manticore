@@ -74,7 +74,7 @@ class DriveController:
                 and dist > vel_towards_point + 500 + 900 and bot.info.time > self.last_dodge_end_time + self.dodge_cooldown:
             self.dodge = DodgeManeuver(bot, point)
         # Start half-flip
-        elif can_dodge and abs(angle) >= 3 and vel_towards_point < 50\
+        elif can_dodge and abs(angle) >= 3 and vel_towards_point < 0\
                 and dist > -vel_towards_point + 500 + 900 and bot.info.time > self.last_dodge_end_time + self.dodge_cooldown:
             self.dodge = HalfFlipManeuver(bot, boost=car.boost > boost_min + 10)
 
