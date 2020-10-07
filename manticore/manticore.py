@@ -99,6 +99,9 @@ class Manticore(BaseAgent):
             self.info.my_car.last_input.yaw = controller.yaw
             self.info.my_car.last_input.boost = controller.boost
 
+    def handle_quick_chat(self, index, team, quick_chat):
+        self.info.handle_quick_chat(index, team, quick_chat)
+
     def use_brain(self) -> SimpleControllerState:
         # Check kickoff
         if self.info.is_kickoff and not self.doing_kickoff:
