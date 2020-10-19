@@ -72,6 +72,7 @@ class Manticore(BaseAgent):
                 Objective.GO_FOR_IT: self.renderer.lime(),
                 Objective.FOLLOW_UP: self.renderer.yellow(),
                 Objective.ROTATING: self.renderer.red(),
+                Objective.SOLO: self.renderer.team_color(alt_color=True),
                 Objective.UNKNOWN: self.renderer.team_color(alt_color=True)
             }[self.info.my_car.objective]
             if doing is not None:
