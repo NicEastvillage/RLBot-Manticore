@@ -201,6 +201,6 @@ class JumpShotManeuver(Maneuver):
         tau2 = T - (T - tau1) * math.sqrt(1 - clip01(ratio))
         velocity_estimate = vf + BOOST_ACCEL * (tau2 - tau1) * dir
         boost_estimate = (tau2 - tau1) * BOOST_PR_SEC
-        enough_boost = boost_estimate < 0.95 * car.boost
-        enough_time = abs(ratio) < 0.9
-        return norm(velocity_estimate) < 0.9 * MAX_SPEED and enough_boost and enough_time
+        enough_boost = boost_estimate < car.boost
+        enough_time = abs(ratio) < 1.0
+        return norm(velocity_estimate) < 1.0 * MAX_SPEED and enough_boost and enough_time
