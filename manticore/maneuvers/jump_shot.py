@@ -2,6 +2,7 @@ import math
 
 from rlbot.agents.base_agent import SimpleControllerState
 from rlbot.utils.structures.quick_chats import QuickChats
+from tmcp import TMCPMessage
 
 from maneuvers.maneuver import Maneuver
 from utility import predict, rendering
@@ -24,13 +25,13 @@ class JumpShotManeuver(Maneuver):
         self.jump_begin_time = -1
         self.jump_pause_counter = 0
         self.dodge_begin_time = -1
-        self.announced_in_quick_chat = False
+        self.announced_in_tmcp = False
 
     def exec(self, bot):
 
-        if not self.announced_in_quick_chat:
-            self.announced_in_quick_chat = True
-            bot.send_quick_chat(QuickChats.CHAT_EVERYONE, QuickChats.Information_IGotIt)
+        if not self.announced_in_tmcp:
+            self.announced_in_tmcp = True
+            bot.send_tmcp(TMCPMessage.ball_action(bot.team, bot.index, self.intercept_time))
 
         ct = bot.info.time
         car = bot.info.my_car

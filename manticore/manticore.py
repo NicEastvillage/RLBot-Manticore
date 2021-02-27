@@ -1,6 +1,7 @@
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlbot.utils.structures.game_data_struct import GameTickPacket
-from tmcp import TMCPHandler
+from rlbot.utils.structures.quick_chats import QuickChats
+from tmcp import TMCPHandler, TMCPMessage
 
 from behaviour.carry import Carry
 from behaviour.clear_ball import ClearBall
@@ -16,7 +17,7 @@ from maneuvers.kickoff import choose_kickoff_maneuver
 from strategy.analyzer import GameAnalyzer
 from strategy.objective import Objective
 from strategy.utility_system import UtilitySystem
-from utility.info import GameInfo
+from utility.info import GameInfo, tcmp_to_quick_chat
 from utility.vec import Vec3
 
 RENDER = True
@@ -131,8 +132,19 @@ class Manticore(BaseAgent):
         return self.maneuver.exec(self)
 
     def handle_tmcp(self):
-        # Receive and handle all match comms messages
+        """
+        Receive and handle all match comms messages
+        """
         new_messages = self.tmcp_handler.recv()
         for message in new_messages:
-            self.print(f"Received TMCP message from {message.index}: {message.action_type}")
             self.info.handle_tmcp_message(message)
+
+    def send_tmcp(self, message: TMCPMessage):
+        """
+        Send a TMCP message (and an equivalent quick chat message if possible)
+        """
+        self.tmcp_handler.send(message)
+        # Transform message into quick chat message if we can
+        qc_msg = tcmp_to_quick_chat(message.action_type)
+        self.send_quick_chat(QuickChats.CHAT_EVERYONE, qc_msg)
+        self.print(f"Sent {message.action_type}")

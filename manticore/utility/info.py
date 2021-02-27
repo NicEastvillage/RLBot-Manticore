@@ -1,3 +1,5 @@
+from typing import Optional
+
 from rlbot.agents.base_agent import SimpleControllerState
 from rlbot.messages.flat import GameTickPacket, FieldInfo
 from rlbot.utils.structures.quick_chats import QuickChats
@@ -340,6 +342,28 @@ class GameInfo:
             quickchat_version = mapping[message.action_type]
             car = self.cars[message.index]
             car.last_quick_chat = QuickChat(message.index, car.team, quickchat_version, self.time - 0.008333)
+
+
+def tcmp_to_quick_chat(tmcp: ActionType):
+    return {
+        ActionType.BALL: QuickChats.Information_IGotIt,
+        ActionType.WAIT: QuickChats.Information_AllYours,
+        ActionType.BOOST: QuickChats.Information_NeedBoost,
+        ActionType.DEMO: QuickChats.Information_TakeTheShot,
+        ActionType.DEFEND: QuickChats.Information_Defending
+    }[tmcp]
+
+
+def quick_chat_to_tcmp(qc_msg) -> Optional[ActionType]:
+    mapping = {
+        QuickChats.Information_IGotIt: ActionType.BALL,
+        QuickChats.Information_AllYours: ActionType.WAIT,
+        QuickChats.Information_NeedBoost: ActionType.BOOST,
+        QuickChats.Information_TakeTheShot: ActionType.DEMO,
+        QuickChats.Information_Defending: ActionType.DEFEND
+    }
+    return mapping[qc_msg] if qc_msg in mapping else None
+
 
 
 def is_near_wall(point: Vec3, offset: float=110) -> bool:
