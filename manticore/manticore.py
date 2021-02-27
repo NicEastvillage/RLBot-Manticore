@@ -1,5 +1,6 @@
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlbot.utils.structures.game_data_struct import GameTickPacket
+from tmcp import TMCPHandler
 
 from behaviour.carry import Carry
 from behaviour.clear_ball import ClearBall
@@ -46,6 +47,7 @@ class Manticore(BaseAgent):
             DefendGoal(),
             PrepareFollowUp()
         ])
+        self.tmcp_handler = TMCPHandler(self)
 
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
         # Read packet
@@ -57,6 +59,7 @@ class Manticore(BaseAgent):
         self.renderer.begin_rendering()
 
         self.info.read_packet(packet)
+        self.handle_tmcp()
         self.analyzer.update(self)
 
         # Check if match is over
@@ -126,3 +129,10 @@ class Manticore(BaseAgent):
             return ctrl
 
         return self.maneuver.exec(self)
+
+    def handle_tmcp(self):
+        # Receive and handle all match comms messages
+        new_messages = self.tmcp_handler.recv()
+        for message in new_messages:
+            self.print(f"Received TMCP message from {message.index}: {message.action_type}")
+            self.info.handle_tmcp_message(message)
