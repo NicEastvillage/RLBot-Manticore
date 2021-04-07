@@ -128,6 +128,18 @@ class Mat33:
     def row(self, n: int) -> Vec3:
         return Vec3(self.get(n, 0), self.get(n, 1), self.get(n, 2))
 
+    @property
+    def forward(self):
+        return self.col(0)
+
+    @property
+    def left(self) -> Vec3:
+        return self.col(1)
+
+    @property
+    def up(self) -> Vec3:
+        return self.col(2)
+
     @staticmethod
     def of(v: float) -> 'Mat33':
         return Mat33(v, v, v, v, v, v, v, v, v)

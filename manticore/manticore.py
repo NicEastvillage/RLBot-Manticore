@@ -13,6 +13,7 @@ from controllers.drive import DriveController
 from controllers.fly import FlyController
 from controllers.other import celebrate
 from controllers.shots import ShotController
+from maneuvers.ground_to_aerial import GroundToAerial
 from maneuvers.kickoff import choose_kickoff_maneuver
 from strategy.analyzer import GameAnalyzer
 from strategy.objective import Objective
@@ -85,6 +86,7 @@ class Manticore(BaseAgent):
                 self.renderer.draw_string_2d(330, 700 + self.index * 20, 1, 1, f"{self.name}:", self.renderer.team_color(alt_color=True))
                 self.renderer.draw_string_2d(500, 700 + self.index * 20, 1, 1, doing.__class__.__name__, state_color)
                 self.renderer.draw_rect_3d(self.info.my_car.pos + Vec3(z=60), 16, 16, True, state_color)
+            GroundToAerial.test(self)
 
         self.renderer.end_rendering()
 

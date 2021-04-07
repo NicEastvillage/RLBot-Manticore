@@ -3,7 +3,8 @@ import math
 from rlbot.agents.base_agent import SimpleControllerState
 
 from controllers.aim_cone import AimCone
-from maneuvers.jump_shot import JumpShotManeuver
+from maneuvers.aerial import AerialManeuver
+from maneuvers.ground_to_aerial import GroundToAerial
 from maneuvers.small_jump import SmallJumpManeuver
 from utility.curves import curve_from_arrival_dir
 from utility.info import Field, Ball
@@ -126,6 +127,11 @@ class ShotController:
         elif ball_soon.pos.z < 600 and ball_soon.vel.z <= 0:
 
             # Ball is on ground soon. Is it worth waiting? TODO if aim is bad, do a slow curve - or delete case?
+            g2aerial = GroundToAerial(ball_soon.pos, time)
+            if g2aerial.is_viable(bot, bot.info.my_car, bot.info.time):
+                bot.maneuver = g2aerial
+                return bot.maneuver.exec(bot)
+
             pass
 
         # ---------------------------------------
@@ -134,6 +140,10 @@ class ShotController:
         if 200 < ball_soon.pos.z < 1400 and aim_cone.contains_direction(car_to_ball_soon) and is_facing_2d:
 
             # Can we hit it if we make jump shot or aerial shot?
+            g2aerial = GroundToAerial(ball_soon.pos, time)
+            if g2aerial.is_viable(bot, bot.info.my_car, bot.info.time):
+                bot.maneuver = g2aerial
+                return bot.maneuver.exec(bot)
 
             vel_f = proj_onto_size(car.vel, xy(car_to_ball_soon))
             aerial = ball_soon.pos.z > 750
@@ -150,15 +160,17 @@ class ShotController:
                     alternatives = [
                         (ball_predict(bot, time * 0.8), time * 0.8),
                         (ball_predict(bot, time * 0.9), time * 0.9),
+                        (ball_predict(bot, time * 0.95), time * 0.95),
                         (ball_soon, time),
                         (ball_predict(bot, time * 1.1), time * 1.1),
+                        (ball_predict(bot, time * 1.05), time * 1.05),
                         (ball_predict(bot, time * 1.2), time * 1.2)
                     ]
 
                     for alt_ball, alt_time in alternatives:
 
-                        potential_small_jump_shot = JumpShotManeuver(bot, alt_ball.pos, bot.info.time + alt_time, do_second_jump=aerial)
-                        jump_shot_viable = potential_small_jump_shot.is_viable(car, bot.info.time)
+                        potential_small_jump_shot = AerialManeuver(alt_ball.pos, bot.info.time + alt_time, car.on_ground, do_second_jump=aerial)
+                        jump_shot_viable = potential_small_jump_shot.is_viable(car, car.rot, car.boost, bot.info.time)
 
                         if jump_shot_viable:
                             self.can_shoot = True
