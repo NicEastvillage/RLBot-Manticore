@@ -1,5 +1,5 @@
 from strategy.objective import Objective
-from utility import predict, rendering
+from utility import predict
 from utility.easing import lin_fall, ease_out
 from utility.rlmath import argmin, argmax, clip01
 from utility.vec import Vec3, xy
@@ -79,8 +79,6 @@ class GameAnalyzer:
                                                         * (1 + ally.onsite / 2)
                                                         * lin_fall(norm(ally.effective_pos - self.ideal_follow_up_pos), 3000)
                                                         * (0 if ally.is_demolished else 1))
-        if bot.index == 0:
-            bot.renderer.draw_string_2d(400, 600, 1, 1, str(attacker_score), bot.renderer.blue())
         if follower is not None:
             follower.objective = Objective.FOLLOW_UP
         for car in bot.info.team_cars:
