@@ -155,9 +155,9 @@ class JumpShotManeuver(Maneuver):
         car_to_hit_dir = normalize(self.hit_pos - car.pos)
         color = bot.renderer.pink()
         draw.cross(self.hit_pos, color, arm_length=100)
-        draw.circle(lerp(car.pos, self.hit_pos, 0.25), car_to_hit_dir, 40, 12, color)
-        draw.circle(lerp(car.pos, self.hit_pos, 0.5), car_to_hit_dir, 40, 12, color)
-        draw.circle(lerp(car.pos, self.hit_pos, 0.75), car_to_hit_dir, 40, 12, color)
+        draw.circle(lerp(car.pos, self.hit_pos, 0.25), car_to_hit_dir, 40, color)
+        draw.circle(lerp(car.pos, self.hit_pos, 0.5), car_to_hit_dir, 40, color)
+        draw.circle(lerp(car.pos, self.hit_pos, 0.75), car_to_hit_dir, 40, color)
         draw.line(car.pos, self.hit_pos, color)
 
         return controls

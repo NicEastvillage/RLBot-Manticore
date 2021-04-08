@@ -6,6 +6,7 @@ from rlbot.agents.base_agent import BaseAgent
 from rlbot.utils.rendering.rendering_manager import RenderingManager, DummyRenderer
 
 import utility.curves as curves
+from utility import vec
 from utility.vec import Vec3, cross, normalize, axis_to_rotation, dot
 
 
@@ -114,9 +115,10 @@ class DebugDrawer:
     def polyline(self, posses: List[Vec3], color):
         self.renderer.draw_polyline_3d(posses, color)
 
-    def circle(self, center: Vec3, normal: Vec3, radius: float, pieces: int, color):
+    def circle(self, center: Vec3, normal: Vec3, radius: float, color):
         # Construct the arm that will be rotated
-        arm = normalize(cross(normal, center)) * radius
+        pieces = int(radius ** 0.7) + 5
+        arm = normalize(vec.cross(normal, center)) * radius
         angle = 2 * math.pi / pieces
         rotation_mat = axis_to_rotation(angle * normalize(normal))
         points = [center + arm]
@@ -175,7 +177,7 @@ class DebugDrawer:
         self.line(center + Vec3(0, -r, 0), center + Vec3(0, 0, -r), color)
         self.line(center + Vec3(0, 0, -r), center + Vec3(0, r, 0), color)
 
-    def bezier(self, points: List[Vec3], color, time_step: float=0.05):
+    def bezier(self, points: List[Vec3], color, time_step: float=0.08):
         time = 0
         last_point = points[0]
         while time < 1:
@@ -183,6 +185,22 @@ class DebugDrawer:
             current_point = curves.bezier(time, points)
             self.renderer.draw_line_3d(last_point, current_point, color)
             last_point = current_point
+
+    def fan(self, center: Vec3, right_ang: float, radians: float, radius: float, color):
+        steps = int((radius ** 0.7) * 2 * math.pi / radians) + 5
+        step_size = radians / (steps - 1)
+
+        points = [center]
+
+        for i in range(steps):
+            ang = right_ang - step_size * i
+            arm_dir = Vec3(math.cos(ang), math.sin(ang), 0)
+            end = center + arm_dir * radius
+            points.append(end)
+
+        points.append(center)
+
+        self.polyline(points, color)
 
 
 def ball_path(bot: BaseAgent, color, duration: float = 4.0, step_size: int = 10):
@@ -242,7 +260,7 @@ def polyline(posses: List[Vec3], color):
     pass
 
 
-def circle(center: Vec3, normal: Vec3, radius: float, pieces: int, color):
+def circle(center: Vec3, normal: Vec3, radius: float, color):
     pass
 
 
@@ -263,4 +281,8 @@ def octahedron(center: Vec3, size: float, color):
 
 
 def bezier(points: List[Vec3], color, time_step: float=0.05):
+    pass
+
+
+def fan(center: Vec3, right_ang: float, radians: float, radius: float, color):
     pass

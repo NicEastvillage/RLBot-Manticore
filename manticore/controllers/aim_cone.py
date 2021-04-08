@@ -74,13 +74,5 @@ class AimCone:
         else:
             return None, 1
 
-    def draw(self, center, arm_len=500, arm_count=5, r=255, g=255, b=255):
-        ang_step = self.span_size() / (arm_count - 1)
-
-        for i in range(arm_count):
-            ang = self.right_ang - ang_step * i
-            arm_dir = Vec3(math.cos(ang), math.sin(ang), 0)
-            end = center + arm_dir * arm_len
-            alpha = 255 if i == 0 or i == arm_count - 1 else 110
-
-            draw.line(center, end, draw.color(r, g, b, alpha))
+    def draw(self, center, arm_len=500, r=255, g=255, b=255):
+        draw.fan(center, self.right_ang, self.span_size(), arm_len, draw.color(r, g, b))
