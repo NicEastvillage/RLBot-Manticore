@@ -7,7 +7,7 @@ from rlbot.utils.rendering.rendering_manager import RenderingManager, DummyRende
 
 import utility.curves as curves
 from utility import vec
-from utility.vec import Vec3, cross, normalize, axis_to_rotation, dot
+from utility.vec import Vec3, normalize, axis_to_rotation, dot
 
 
 def renderer() -> RenderingManager:
@@ -177,7 +177,7 @@ class DebugDrawer:
         self.line(center + Vec3(0, -r, 0), center + Vec3(0, 0, -r), color)
         self.line(center + Vec3(0, 0, -r), center + Vec3(0, r, 0), color)
 
-    def bezier(self, points: List[Vec3], color, time_step: float=0.08):
+    def bezier(self, points: List[Vec3], color, time_step: float=0.0625):
         time = 0
         last_point = points[0]
         while time < 1:
@@ -187,7 +187,7 @@ class DebugDrawer:
             last_point = current_point
 
     def fan(self, center: Vec3, right_ang: float, radians: float, radius: float, color):
-        steps = int((radius ** 0.7) * 2 * math.pi / radians) + 5
+        steps = int((radius ** 0.7) * radians / math.tau) + 5
         step_size = radians / (steps - 1)
 
         points = [center]
