@@ -7,9 +7,10 @@ from tmcp import TMCPMessage, ActionType
 
 from strategy.objective import Objective
 from utility.easing import lin_fall
+from utility.plane import Plane
 from utility.rlmath import clip
-from utility.vec import Vec3, Mat33, euler_to_rotation, angle_between, norm
-
+from utility.vec import Vec3, Mat33, euler_to_rotation, angle_between, norm, normalize
+from utility.zone import Zone3d
 
 MAX_SPEED = 2300
 BOOST_ACCEL = 1060
@@ -29,6 +30,57 @@ class Field:
     LENGTH = 10240
     LENGTH2 = LENGTH / 2
     HEIGHT = 2044
+
+    ZONE = Zone3d(Vec3(WIDTH2, LENGTH2, 0.0), Vec3(-WIDTH2, -LENGTH2, HEIGHT))
+
+    CORNER_WALL_AX_INTERSECT = 8064
+
+    GROUND = Plane(Vec3(), Vec3(z=1))
+    CEILING = Plane(Vec3(z=HEIGHT), Vec3(z=-1))
+    BLUE_BACKBOARD = Plane(Vec3(y=-LENGTH2), Vec3(y=1))
+    ORANGE_BACKBOARD = Plane(Vec3(y=LENGTH2), Vec3(y=-1))
+    LEFT_WALL = Plane(Vec3(x=WIDTH2), Vec3(x=-1))   # Blue POV
+    RIGHT_WALL = Plane(Vec3(x=-WIDTH2), Vec3(x=1))   # Blue POV
+    BLUE_RIGHT_CORNER_WALL = Plane(Vec3(y=-CORNER_WALL_AX_INTERSECT), normalize(Vec3(x=1, y=1)))
+    BLUE_LEFT_CORNER_WALL = Plane(Vec3(y=-CORNER_WALL_AX_INTERSECT), normalize(Vec3(x=-1, y=1)))
+    ORANGE_RIGHT_CORNER_WALL = Plane(Vec3(y=CORNER_WALL_AX_INTERSECT), normalize(Vec3(x=-1, y=-1)))
+    ORANGE_LEFT_CORNER_WALL = Plane(Vec3(y=CORNER_WALL_AX_INTERSECT), normalize(Vec3(x=1, y=-1)))
+
+    ALL_WALLS = [
+        GROUND,
+        CEILING,
+        BLUE_BACKBOARD,
+        ORANGE_BACKBOARD,
+        LEFT_WALL,
+        RIGHT_WALL,
+        BLUE_RIGHT_CORNER_WALL,
+        BLUE_LEFT_CORNER_WALL,
+        ORANGE_RIGHT_CORNER_WALL,
+        ORANGE_LEFT_CORNER_WALL,
+    ]
+
+    SIDE_WALLS = [
+        BLUE_BACKBOARD,
+        ORANGE_BACKBOARD,
+        LEFT_WALL,
+        RIGHT_WALL,
+        BLUE_RIGHT_CORNER_WALL,
+        BLUE_LEFT_CORNER_WALL,
+        ORANGE_RIGHT_CORNER_WALL,
+        ORANGE_LEFT_CORNER_WALL,
+    ]
+
+    SIDE_WALLS_AND_GROUND = [
+        GROUND,
+        BLUE_BACKBOARD,
+        ORANGE_BACKBOARD,
+        LEFT_WALL,
+        RIGHT_WALL,
+        BLUE_RIGHT_CORNER_WALL,
+        BLUE_LEFT_CORNER_WALL,
+        ORANGE_RIGHT_CORNER_WALL,
+        ORANGE_LEFT_CORNER_WALL,
+    ]
 
 
 class Ball:
