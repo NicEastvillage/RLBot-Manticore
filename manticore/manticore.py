@@ -87,6 +87,7 @@ class Manticore(BaseAgent):
             draw.string_2d(330, 700 + self.index * 20, 1, f"{self.name}:", draw.team_color())
             draw.string_2d(500, 700 + self.index * 20, 1, doing.__class__.__name__, state_color)
             draw.rect_3d(self.info.my_car.pos + Vec3(z=60), 16, 16, state_color)
+            draw.string_3d(self.info.my_car.pos + Vec3(z=110), 1, f"{self.info.my_car.last_ball_touch:.1f}", state_color)
 
         self.renderer.end_rendering()
 

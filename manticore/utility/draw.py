@@ -106,7 +106,7 @@ class DebugDrawer:
     def rect_3d(self, pos: Vec3, width: float, height: float, color, fill: bool = True, centered: bool = True):
         self.renderer.draw_rect_3d(pos, width, height, fill, color, centered)
 
-    def string_3d(self, pos: Vec3, scale: float, text: str, color):
+    def string_3d(self, pos: Vec3, scale: int, text: str, color):
         self.renderer.draw_string_3d(pos, scale, scale, text, color)
 
     def line(self, start: Vec3, end: Vec3, color):
@@ -248,7 +248,7 @@ def rect_3d(pos: Vec3, width: float, height: float, color, fill: bool = True, ce
     pass
 
 
-def string_3d(pos: Vec3, scale: float, text: str, color):
+def string_3d(pos: Vec3, scale: int, text: str, color):
     pass
 
 

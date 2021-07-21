@@ -1,7 +1,7 @@
 from strategy.objective import Objective
 from utility import predict
 from utility.easing import lin_fall, ease_out
-from utility.rlmath import argmin, argmax, clip01
+from utility.rlmath import argmin, argmax
 from utility.vec import Vec3, xy
 from utility.vec import norm, normalize, dot
 
@@ -69,7 +69,9 @@ class GameAnalyzer:
                                                         * ally.possession
                                                         * ally.got_it_according_to_quick_chat_01(bot.info.time)
                                                         * (1.0 if ally.onsite else 0.5)
-                                                        * (0 if ally.is_demolished else 1)))
+                                                        * (0 if ally.is_demolished else 1))
+                                                        # Eagerness
+                                                        + (0.0001 * (bot.info.time - ally.last_ball_touch) ** 2 if bot.index == ally.index else 0.0))
 
         attacker.objective = Objective.GO_FOR_IT
         self.ideal_follow_up_pos = xy(ball.pos + bot.info.own_goal.pos) * 0.5

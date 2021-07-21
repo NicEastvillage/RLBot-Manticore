@@ -43,6 +43,16 @@ class Ball:
         # self.last_bounce # TODO
 
 
+class BallTouch:
+    def __init__(self, index: int = -1, time: float = 0.0, pos=Vec3(), normal=Vec3(z=1), team: int = -1):
+        self.index = index
+        self.time = time
+        self.pos = pos
+        self.normal = normal
+        self.team = team
+        self.new = False
+
+
 class Car:
     def __init__(self, index=-1, name="Unknown", team=0, pos=Vec3(), vel=Vec3(), ang_vel=Vec3(), rot=Mat33(), time=0.0):
         self.id = index
@@ -73,6 +83,8 @@ class Car:
         self.possession = 0
         self.onsite = False
         self.reach_ball_time = 0
+
+        self.last_ball_touch = 0.0
 
     @property
     def forward(self) -> Vec3:
@@ -165,6 +177,7 @@ class GameInfo:
         self.time_since_last_kickoff = 0
 
         self.ball = Ball()
+        self.ball_touch = BallTouch()
 
         self.boost_pads = []
         self.small_boost_pads = []
@@ -254,6 +267,7 @@ class GameInfo:
                 car.index = i
                 car.team = game_car.team
                 car.name = game_car.name
+                car.last_ball_touch = self.time
                 self.cars.append(car)
 
                 if game_car.team == self.team:
@@ -264,6 +278,19 @@ class GameInfo:
                     self.team_cars.append(car)
                 else:
                     self.opponents.append(car)
+
+        # Ball touch
+        self.ball_touch.new = False
+        touch = packet.game_ball.latest_touch
+        if touch.time_seconds != self.ball_touch.time:
+            self.ball_touch.index = touch.player_index
+            self.ball_touch.team = touch.team
+            self.ball_touch.time = touch.time_seconds
+            self.ball_touch.pos = Vec3(touch.hit_location)
+            self.ball_touch.normal = Vec3(touch.hit_normal)
+            self.ball_touch.new = True
+
+            self.cars[self.ball_touch.index].last_ball_touch = touch.time_seconds
 
         # Read boost pads
         for i in range(0, len(self.boost_pads)):
